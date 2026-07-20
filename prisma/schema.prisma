@@ -1,0 +1,80 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  name        String
+  slug        String      @unique
+  description String      @db.Text
+  price       Float
+  stock       Int         @default(100)
+  category    String      @default("Herbal Drink")
+  image       String      @db.Text
+  ingredients String?     @db.Text
+  active      Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
+}
+
+model PaymentMethod {
+  id            String   @id @default(uuid())
+  name          String
+  bankName      String
+  accountNumber String
+  accountName   String
+  qrCodeUrl     String?  @db.Text
+  instructions  String?  @db.Text
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  orders        Order[]
+}
+
+model Banner {
+  id          String   @id @default(uuid())
+  title       String
+  subtitle    String?
+  imageUrl    String   @db.Text
+  linkUrl     String   @default("/shop")
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model Order {
+  id             String         @id @default(uuid())
+  orderNumber    String         @unique
+  customerName   String
+  customerEmail  String
+  customerPhone  String
+  address        String         @db.Text
+  city           String
+  postalCode     String
+  totalAmount    Float
+  paymentMethodId String?
+  paymentMethod  PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+  paymentProofUrl String?       @db.Text
+  status         String         @default("PENDING_PAYMENT") // PENDING_PAYMENT, WAITING_APPROVAL, PAID, REJECTED, SHIPPED, COMPLETED, CANCELLED
+  checkoutType   String         @default("WEB") // WEB, WHATSAPP
+  notes          String?        @db.Text
+  items          OrderItem[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id])
+  productName String
+  price       Float
+  quantity    Int
+}

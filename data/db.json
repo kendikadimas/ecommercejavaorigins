@@ -1,0 +1,408 @@
+{
+  "users": [
+    {
+      "name": "sellyjuan alya ",
+      "email": "sellyjuanalyarsln26@gmail.com",
+      "password": "akualya",
+      "phone": "085866077520",
+      "address": "jalan belimbing no 71, maos",
+      "city": "Cilacap",
+      "postalCode": "53272",
+      "id": "usr-1784561864379",
+      "createdAt": "2026-07-20T15:37:44.379Z"
+    },
+    {
+      "id": "usr-1",
+      "name": "Budi Santoso",
+      "email": "budi@example.com",
+      "password": "user123",
+      "phone": "081234567890",
+      "address": "Jl. Malioboro No. 45",
+      "city": "Yogyakarta",
+      "postalCode": "55271",
+      "createdAt": "2026-07-20T12:00:00.000Z"
+    }
+  ],
+  "products": [
+    {
+      "id": "prod-1",
+      "name": "Java Origins Classic Herbal Drink (250ml Can)",
+      "slug": "java-origins-classic-herbal-drink",
+      "description": "Java Drink is a natural herbal beverage made from carefully selected Indonesian herbs, crafted to bring warmth, comfort, and goodness to your daily routine.",
+      "price": 14.99,
+      "stock": 120,
+      "category": "Herbal Beverage",
+      "image": "https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=800&q=80",
+      "ingredients": "Ginger, Turmeric, Lemongrass, Palm Sugar, Honey",
+      "active": true,
+      "createdAt": "2026-07-20T12:00:00.000Z",
+      "updatedAt": "2026-07-20T12:00:00.000Z"
+    },
+    {
+      "id": "prod-2",
+      "name": "Java Origins Ginger Warmth Elixir (250ml Can)",
+      "slug": "java-origins-ginger-warmth-elixir",
+      "description": "Spiced Indonesian red ginger extract blended with organic palm sugar to provide soothing chest warmth and digestive comfort.",
+      "price": 18.5,
+      "stock": 85,
+      "category": "Herbal Beverage",
+      "image": "https://images.unsplash.com/photo-1514733670139-4d87a1941d55?auto=format&fit=crop&w=800&q=80",
+      "ingredients": "Red Ginger, Lemongrass, Cinnamon, Palm Sugar",
+      "active": true,
+      "createdAt": "2026-07-20T12:00:00.000Z",
+      "updatedAt": "2026-07-20T12:00:00.000Z"
+    },
+    {
+      "id": "prod-3",
+      "name": "Java Origins Turmeric Curcumin Drink (250ml Can)",
+      "slug": "java-origins-turmeric-curcumin-drink",
+      "description": "Potent traditional kunyit asam tonic rich in natural antioxidants to boost vitality, immunity, and overall skin glow.",
+      "price": 14.99,
+      "stock": 90,
+      "category": "Herbal Beverage",
+      "image": "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=800&q=80",
+      "ingredients": "Turmeric, Tamarind, Honey, Lime Extract",
+      "active": true,
+      "createdAt": "2026-07-20T12:00:00.000Z",
+      "updatedAt": "2026-07-20T12:00:00.000Z"
+    },
+    {
+      "id": "prod-4",
+      "name": "Java Origins Pure Forest Honey Jar (500g)",
+      "slug": "java-origins-pure-forest-honey",
+      "description": "Raw unpasteurized wildflower honey harvested sustainably from native Javanese rainforest canopies.",
+      "price": 24.99,
+      "stock": 50,
+      "category": "Honey & Elixir",
+      "image": "https://i.pinimg.com/736x/d5/d0/7a/d5d07af2ab1603ae2b8482943f2300c9.jpg",
+      "ingredients": "100% Pure Forest Honey",
+      "active": true,
+      "createdAt": "2026-07-20T12:00:00.000Z",
+      "updatedAt": "2026-07-20T15:33:33.556Z"
+    }
+  ],
+  "paymentMethods": [
+    {
+      "id": "pay-1",
+      "name": "Bank Central Asia (BCA)",
+      "bankName": "BCA",
+      "accountNumber": "8830-1928-441",
+      "accountName": "PT JAVA ORIGINS INDONESIA",
+      "instructions": "Silakan transfer tepat sesuai total nominal pesanan. Unggah bukti bayar setelah transfer.",
+      "active": true,
+      "createdAt": "2026-07-20T12:00:00.000Z"
+    },
+    {
+      "id": "pay-2",
+      "name": "Bank Mandiri Transfer",
+      "bankName": "Mandiri",
+      "accountNumber": "137-00-1928-882",
+      "accountName": "PT JAVA ORIGINS INDONESIA",
+      "instructions": "Sertakan nomor order pada berita transfer.",
+      "active": true,
+      "createdAt": "2026-07-20T12:00:00.000Z"
+    },
+    {
+      "id": "pay-3",
+      "name": "QRIS All Payment (GoPay/OVO/DANA/BCA)",
+      "bankName": "QRIS",
+      "accountNumber": "ID10293847561",
+      "accountName": "JAVA ORIGINS OFFICIAL",
+      "qrCodeUrl": "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=JAVA_ORIGINS_QRIS_PAYMENT",
+      "instructions": "Scan QRIS menggunakan aplikasi E-Wallet atau Mobile Banking Anda.",
+      "active": true,
+      "createdAt": "2026-07-20T12:00:00.000Z"
+    }
+  ],
+  "banners": [
+    {
+      "title": "THE JAVA ORIGINS DRINK",
+      "subtitle": "Java Drink is a natural herbal beverage made from carefully selected Indonesian herbs...",
+      "imageUrl": "/uploads/1784561649671-limee.jpg",
+      "linkUrl": "/shop",
+      "active": true,
+      "sortOrder": 3,
+      "id": "ban-1784561652277",
+      "createdAt": "2026-07-20T15:34:12.277Z"
+    },
+    {
+      "id": "ban-1",
+      "title": "THE JAVA ORIGINS DRINK",
+      "subtitle": "Java Drink is a natural herbal beverage made from carefully selected Indonesian herbs, crafted to bring warmth, comfort, and goodness to your daily routine.",
+      "imageUrl": "/uploads/1784561631269-gingerr.jpg",
+      "linkUrl": "/shop",
+      "active": true,
+      "sortOrder": 1,
+      "createdAt": "2026-07-20T12:00:00.000Z"
+    },
+    {
+      "id": "ban-2",
+      "title": "AUTHENTIC INDONESIAN HERBAL BEAUTY & WELLNESS",
+      "subtitle": "Handcrafted premium herbal formulations for global distribution and everyday living.",
+      "imageUrl": "https://images.unsplash.com/photo-1514733670139-4d87a1941d55?auto=format&fit=crop&w=1600&q=80",
+      "linkUrl": "/shop",
+      "active": true,
+      "sortOrder": 2,
+      "createdAt": "2026-07-20T12:00:00.000Z"
+    }
+  ],
+  "orders": [
+    {
+      "id": "ord-1784562240213",
+      "orderNumber": "JO-20260720-6560",
+      "customerName": "sellyjuan alya ",
+      "customerEmail": "sellyjuanalyarsln26@gmail.com",
+      "customerPhone": "085866077520",
+      "address": "jalan belimbing no 71, maos",
+      "city": "Cilacap",
+      "postalCode": "53272",
+      "totalAmount": 24.99,
+      "status": "PENDING_PAYMENT",
+      "checkoutType": "WHATSAPP",
+      "notes": "",
+      "items": [
+        {
+          "id": "item-1784562240213-0",
+          "orderId": "ord-1784562240213",
+          "productId": "prod-4",
+          "productName": "Java Origins Pure Forest Honey Jar (500g)",
+          "price": 24.99,
+          "quantity": 1
+        }
+      ],
+      "createdAt": "2026-07-20T15:44:00.213Z",
+      "updatedAt": "2026-07-20T15:44:00.213Z"
+    },
+    {
+      "id": "ord-1784562147065",
+      "orderNumber": "JO-20260720-4859",
+      "customerName": "sellyjuan alya ",
+      "customerEmail": "sellyjuanalyarsln26@gmail.com",
+      "customerPhone": "085866077520",
+      "address": "jalan belimbing no 71, maos",
+      "city": "Cilacap",
+      "postalCode": "53272",
+      "totalAmount": 74.95,
+      "status": "REJECTED",
+      "checkoutType": "WHATSAPP",
+      "notes": "",
+      "items": [
+        {
+          "id": "item-1784562147065-0",
+          "orderId": "ord-1784562147065",
+          "productId": "prod-3",
+          "productName": "Java Origins Turmeric Curcumin Drink (250ml Can)",
+          "price": 14.99,
+          "quantity": 5
+        }
+      ],
+      "createdAt": "2026-07-20T15:42:27.065Z",
+      "updatedAt": "2026-07-20T15:44:54.035Z"
+    },
+    {
+      "id": "ord-1784562096554",
+      "orderNumber": "JO-20260720-1782",
+      "customerName": "sellyjuan alya ",
+      "customerEmail": "sellyjuanalyarsln26@gmail.com",
+      "customerPhone": "085866077520",
+      "address": "jalan belimbing no 71, maos",
+      "city": "Cilacap",
+      "postalCode": "53272",
+      "totalAmount": 59.96,
+      "status": "REJECTED",
+      "checkoutType": "WHATSAPP",
+      "notes": "",
+      "items": [
+        {
+          "id": "item-1784562096554-0",
+          "orderId": "ord-1784562096554",
+          "productId": "prod-3",
+          "productName": "Java Origins Turmeric Curcumin Drink (250ml Can)",
+          "price": 14.99,
+          "quantity": 4
+        }
+      ],
+      "createdAt": "2026-07-20T15:41:36.554Z",
+      "updatedAt": "2026-07-20T15:44:55.958Z"
+    },
+    {
+      "id": "ord-1784562047621",
+      "orderNumber": "JO-20260720-9652",
+      "customerName": "sellyjuan alya ",
+      "customerEmail": "sellyjuanalyarsln26@gmail.com",
+      "customerPhone": "085866077520",
+      "address": "jalan belimbing no 71, maos",
+      "city": "Cilacap",
+      "postalCode": "53272",
+      "totalAmount": 59.96,
+      "paymentMethodId": "pay-1",
+      "paymentMethod": {
+        "id": "pay-1",
+        "name": "Bank Central Asia (BCA)",
+        "bankName": "BCA",
+        "accountNumber": "8830-1928-441",
+        "accountName": "PT JAVA ORIGINS INDONESIA",
+        "instructions": "Silakan transfer tepat sesuai total nominal pesanan. Unggah bukti bayar setelah transfer.",
+        "active": true,
+        "createdAt": "2026-07-20T12:00:00.000Z"
+      },
+      "status": "SHIPPED",
+      "checkoutType": "WEB",
+      "notes": "",
+      "items": [
+        {
+          "id": "item-1784562047622-0",
+          "orderId": "ord-1784562047622",
+          "productId": "prod-1",
+          "productName": "Java Origins Classic Herbal Drink (250ml Can)",
+          "price": 14.99,
+          "quantity": 4
+        }
+      ],
+      "createdAt": "2026-07-20T15:40:47.622Z",
+      "updatedAt": "2026-07-20T15:45:25.612Z",
+      "paymentProofUrl": "/uploads/1784562061247-Hari_Pers__1_.jpg"
+    },
+    {
+      "id": "ord-1784561920106",
+      "orderNumber": "JO-20260720-9923",
+      "customerName": "sellyjuan alya ",
+      "customerEmail": "sellyjuanalyarsln26@gmail.com",
+      "customerPhone": "085866077520",
+      "address": "jalan belimbing no 71, maos",
+      "city": "Cilacap",
+      "postalCode": "53272",
+      "totalAmount": 55.5,
+      "status": "PENDING_PAYMENT",
+      "checkoutType": "WHATSAPP",
+      "notes": "",
+      "items": [
+        {
+          "id": "item-1784561920107-0",
+          "orderId": "ord-1784561920107",
+          "productId": "prod-2",
+          "productName": "Java Origins Ginger Warmth Elixir (250ml Can)",
+          "price": 18.5,
+          "quantity": 3
+        }
+      ],
+      "createdAt": "2026-07-20T15:38:40.107Z",
+      "updatedAt": "2026-07-20T15:38:40.107Z"
+    },
+    {
+      "id": "ord-101",
+      "orderNumber": "JO-20260720-001",
+      "customerName": "Budi Santoso",
+      "customerEmail": "budi@example.com",
+      "customerPhone": "081234567890",
+      "address": "Jl. Malioboro No. 45",
+      "city": "Yogyakarta",
+      "postalCode": "55271",
+      "totalAmount": 44.97,
+      "paymentMethodId": "pay-1",
+      "paymentProofUrl": "https://images.unsplash.com/photo-1556742049-0a670fc80789?auto=format&fit=crop&w=600&q=80",
+      "status": "WAITING_APPROVAL",
+      "checkoutType": "WEB",
+      "notes": "Tolong packing kayu jika memungkinkan",
+      "items": [
+        {
+          "id": "item-1",
+          "orderId": "ord-101",
+          "productId": "prod-1",
+          "productName": "Java Origins Classic Herbal Drink (250ml Can)",
+          "price": 14.99,
+          "quantity": 2
+        },
+        {
+          "id": "item-2",
+          "orderId": "ord-101",
+          "productId": "prod-3",
+          "productName": "Java Origins Turmeric Curcumin Drink (250ml Can)",
+          "price": 14.99,
+          "quantity": 1
+        }
+      ],
+      "createdAt": "2026-07-20T12:00:00.000Z",
+      "updatedAt": "2026-07-20T12:00:00.000Z"
+    }
+  ],
+  "emailLogs": [
+    {
+      "id": "email-1784562325614",
+      "to": "sellyjuanalyarsln26@gmail.com",
+      "subject": "Update Status Pesanan #JO-20260720-9652 - Java Origins",
+      "body": "Halo sellyjuan alya , status pesanan Anda #JO-20260720-9652 telah diperbarui menjadi: Dalam Pengiriman (SHIPPED).",
+      "createdAt": "2026-07-20T15:45:25.614Z"
+    },
+    {
+      "id": "email-1784562324059",
+      "to": "sellyjuanalyarsln26@gmail.com",
+      "subject": "Update Status Pesanan #JO-20260720-9652 - Java Origins",
+      "body": "Halo sellyjuan alya , status pesanan Anda #JO-20260720-9652 telah diperbarui menjadi: Pembayaran Disetujui (PAID).",
+      "createdAt": "2026-07-20T15:45:24.059Z"
+    },
+    {
+      "id": "email-1784562295959",
+      "to": "sellyjuanalyarsln26@gmail.com",
+      "subject": "Update Status Pesanan #JO-20260720-1782 - Java Origins",
+      "body": "Halo sellyjuan alya , status pesanan Anda #JO-20260720-1782 telah diperbarui menjadi: Ditolak (REJECTED).",
+      "createdAt": "2026-07-20T15:44:55.959Z"
+    },
+    {
+      "id": "email-1784562294038",
+      "to": "sellyjuanalyarsln26@gmail.com",
+      "subject": "Update Status Pesanan #JO-20260720-4859 - Java Origins",
+      "body": "Halo sellyjuan alya , status pesanan Anda #JO-20260720-4859 telah diperbarui menjadi: Ditolak (REJECTED).",
+      "createdAt": "2026-07-20T15:44:54.038Z"
+    },
+    {
+      "id": "email-1784562240214",
+      "to": "sellyjuanalyarsln26@gmail.com",
+      "subject": "Konfirmasi Pemesanan #JO-20260720-6560 - Java Origins",
+      "body": "Halo sellyjuan alya , pesanan Anda #JO-20260720-6560 senilai $24.99 NZD telah kami terima. Silakan lakukan pembayaran dan unggah bukti transfer.",
+      "createdAt": "2026-07-20T15:44:00.214Z"
+    },
+    {
+      "id": "email-1784562147066",
+      "to": "sellyjuanalyarsln26@gmail.com",
+      "subject": "Konfirmasi Pemesanan #JO-20260720-4859 - Java Origins",
+      "body": "Halo sellyjuan alya , pesanan Anda #JO-20260720-4859 senilai $74.95 NZD telah kami terima. Silakan lakukan pembayaran dan unggah bukti transfer.",
+      "createdAt": "2026-07-20T15:42:27.066Z"
+    },
+    {
+      "id": "email-1784562096555",
+      "to": "sellyjuanalyarsln26@gmail.com",
+      "subject": "Konfirmasi Pemesanan #JO-20260720-1782 - Java Origins",
+      "body": "Halo sellyjuan alya , pesanan Anda #JO-20260720-1782 senilai $59.96 NZD telah kami terima. Silakan lakukan pembayaran dan unggah bukti transfer.",
+      "createdAt": "2026-07-20T15:41:36.555Z"
+    },
+    {
+      "id": "email-1784562061411",
+      "to": "sellyjuanalyarsln26@gmail.com",
+      "subject": "Update Status Pesanan #JO-20260720-9652 - Java Origins",
+      "body": "Halo sellyjuan alya , status pesanan Anda #JO-20260720-9652 telah diperbarui menjadi: Menunggu ACC Admin (Bukti Bayar Terunggah).",
+      "createdAt": "2026-07-20T15:41:01.411Z"
+    },
+    {
+      "id": "email-1784562047624",
+      "to": "sellyjuanalyarsln26@gmail.com",
+      "subject": "Konfirmasi Pemesanan #JO-20260720-9652 - Java Origins",
+      "body": "Halo sellyjuan alya , pesanan Anda #JO-20260720-9652 senilai $59.96 NZD telah kami terima. Silakan lakukan pembayaran dan unggah bukti transfer.",
+      "createdAt": "2026-07-20T15:40:47.624Z"
+    },
+    {
+      "id": "email-1784561920110",
+      "to": "sellyjuanalyarsln26@gmail.com",
+      "subject": "Konfirmasi Pemesanan #JO-20260720-9923 - Java Origins",
+      "body": "Halo sellyjuan alya , pesanan Anda #JO-20260720-9923 senilai $55.50 NZD telah kami terima. Silakan lakukan pembayaran dan unggah bukti transfer.",
+      "createdAt": "2026-07-20T15:38:40.110Z"
+    },
+    {
+      "id": "email-1",
+      "to": "budi@example.com",
+      "subject": "Notifikasi Status Pesanan #JO-20260720-001",
+      "body": "Halo Budi Santoso, pesanan Anda #JO-20260720-001 saat ini berstatus: Menunggu Persetujuan Admin (WAITING_APPROVAL).",
+      "createdAt": "2026-07-20T12:00:00.000Z"
+    }
+  ]
+}
