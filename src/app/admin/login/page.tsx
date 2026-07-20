@@ -1,14 +1,19 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Lock, Mail, ArrowRight, AlertCircle, ShieldCheck } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { Lock, Mail, ArrowRight, AlertCircle, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 
 export default function AdminLoginPage() {
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/admin/products';
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,8 +37,8 @@ export default function AdminLoginPage() {
       localStorage.setItem('java_admin_logged_in', 'true');
       document.cookie = 'java_admin_auth=authenticated; path=/; max-age=86400';
 
-      // Perform clean full-page navigation to dashboard
-      window.location.href = '/admin/products';
+      // Perform clean full-page navigation to redirect target
+      window.location.href = redirectTo;
     } catch (err: any) {
       setError(err.message || 'Login failed. Use admin@javaorigins.com and admin123');
     } finally {
@@ -77,7 +82,7 @@ export default function AdminLoginPage() {
               <input
                 type="text"
                 required
-                placeholder="admin@javaorigins.com"
+                placeholder="nama@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 bg-[#140E0A] border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-[#FACC15]"
@@ -92,14 +97,22 @@ export default function AdminLoginPage() {
             </label>
             <div className="relative">
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 required
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-[#140E0A] border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-[#FACC15]"
+                className="w-full pl-10 pr-10 py-3 bg-[#140E0A] border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-[#FACC15]"
               />
               <Lock size={18} className="absolute left-3 top-3.5 text-gray-400" />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-200 focus:outline-none"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
           </div>
 

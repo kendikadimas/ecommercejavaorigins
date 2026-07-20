@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Package, CreditCard, Image as ImageIcon, ShoppingCart, ArrowLeft, LogOut, Menu, X, Sun, Moon } from 'lucide-react';
 import AdminLoginPage from './login/page';
 import { AdminThemeProvider, useAdminTheme } from '@/context/AdminThemeContext';
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { theme, toggleTheme } = useAdminTheme();
 
   // Synchronous initial authentication check
@@ -61,7 +62,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   if (!isAuthenticated) {
-    return <AdminLoginPage />;
+    router.replace(`/admin/login?redirect=${encodeURIComponent(pathname)}`);
+    return null;
   }
 
   const navItems = [

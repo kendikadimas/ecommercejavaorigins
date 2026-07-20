@@ -2,12 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { User, ShoppingBag, Mail, LogOut, CheckCircle2, Clock, Truck, XCircle, AlertCircle, Save, ExternalLink } from 'lucide-react';
 import { useCustomerAuth } from '@/context/CustomerAuthContext';
 import { OrderType, EmailLogType } from '@/lib/store';
 import { formatPrice } from '@/lib/format';
 
 export default function CustomerProfilePage() {
+  const router = useRouter();
   const { user, loading, logout, updateProfile } = useCustomerAuth();
 
   const [activeTab, setActiveTab] = useState<'PROFILE' | 'ORDERS' | 'NOTIFICATIONS'>('ORDERS');
@@ -58,30 +60,9 @@ export default function CustomerProfilePage() {
   }
 
   if (!user) {
-    return (
-      <div className="bg-[#FAF8F5] min-h-screen py-20 text-center font-sans">
-        <div className="max-w-md mx-auto p-8 bg-white border border-[#E6DEC9] rounded-2xl space-y-4 shadow-sm">
-          <AlertCircle size={40} className="mx-auto text-amber-500" />
-          <h2 className="text-2xl font-bold text-[#2C1D11]">You Are Not Logged In</h2>
-          <p className="text-xs text-gray-500">
-            Please log in or register a new account to access your profile & order history.
-          </p>
-          <div className="pt-2 flex justify-center space-x-3">
-            <Link
-              href="/login"
-              className="bg-[#D97706] hover:bg-[#B45309] text-white font-extrabold px-6 py-2.5 rounded-xl text-xs uppercase tracking-wider"
-            >
-              Login Now
-            </Link>
-            <Link
-              href="/register"
-              className="bg-white border border-[#D6CBB8] text-[#2C1D11] hover:bg-[#FAF8F5] font-bold px-6 py-2.5 rounded-xl text-xs uppercase tracking-wider"
-            >
-              Register Account
-            </Link>
-          </div>
-        </div>
-      </div>
+    router.replace('/login?redirect=/profile');
+    return null;
+  }
     );
   }
 

@@ -47,6 +47,13 @@ export default function CheckoutPage() {
     }
   }, [user]);
 
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login?redirect=/checkout');
+    }
+  }, [authLoading, user, router]);
+
   useEffect(() => {
     fetch('/api/payment-methods')
       .then((res) => res.json())

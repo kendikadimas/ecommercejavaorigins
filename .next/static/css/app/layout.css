@@ -1662,6 +1662,9 @@ video {
 .pt-6{
   padding-top: 1.5rem;
 }
+.pr-10{
+  padding-right: 2.5rem;
+}
 .text-left{
   text-align: left;
 }
@@ -2276,6 +2279,16 @@ body {
 .hover\:text-white:hover{
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+}
+
+.hover\:text-gray-200:hover{
+  --tw-text-opacity: 1;
+  color: rgb(229 231 235 / var(--tw-text-opacity, 1));
+}
+
+.hover\:text-gray-600:hover{
+  --tw-text-opacity: 1;
+  color: rgb(75 85 99 / var(--tw-text-opacity, 1));
 }
 
 .hover\:underline:hover{
