@@ -193,19 +193,23 @@ export default function OrderStatusPage() {
             {order.paymentMethod ? (
               <div className="space-y-3">
                 <div className="p-4 bg-[#FFFDF6] border border-[#EAB308]/30 rounded-xl space-y-2">
-                  <div className="flex items-center space-x-2 font-bold text-sm text-[#140E0A]">
-                    <Building2 size={18} className="text-[#EAB308]" />
-                    <span>{order.paymentMethod.name} ({order.paymentMethod.bankName})</span>
+                  <div className="flex items-center space-x-2 font-bold text-base text-[#140E0A]">
+                    <Building2 size={20} className="text-[#EAB308]" />
+                    <span>{order.paymentMethod.bankName}</span>
                   </div>
-                  <p className="text-xs text-[#786C60] font-normal">
-                    Account Number:
-                  </p>
-                  <p className="font-mono text-xl font-extrabold text-[#140E0A] tracking-wider select-all">
-                    {order.paymentMethod.accountNumber}
-                  </p>
                   <p className="text-xs text-[#786C60] font-normal">
                     Account Name: <span className="font-bold text-[#140E0A]">{order.paymentMethod.accountName}</span>
                   </p>
+                  {order.paymentMethod.accountNumber && (
+                    <>
+                      <p className="text-xs text-[#786C60] font-normal">
+                        Account Number:
+                      </p>
+                      <p className="font-mono text-xl font-extrabold text-[#140E0A] tracking-wider select-all">
+                        {order.paymentMethod.accountNumber}
+                      </p>
+                    </>
+                  )}
                 </div>
 
                 {order.paymentMethod.qrCodeUrl && (
@@ -218,9 +222,25 @@ export default function OrderStatusPage() {
                 )}
 
                 {order.paymentMethod.instructions && (
-                  <p className="text-xs text-[#786C60] bg-[#F5EFE6] p-3 rounded-lg font-normal">
-                    {order.paymentMethod.instructions}
-                  </p>
+                  <div className="p-4 bg-[#F5EFE6] rounded-xl space-y-2 text-xs font-mono text-[#3A2B20]">
+                    <p className="text-[11px] font-sans font-bold text-[#786C60] uppercase tracking-wider">
+                      Reference Details for ASB Bank Transfer:
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div className="bg-white p-2.5 rounded-lg border border-[#E6E0D4] flex flex-col justify-between">
+                        <span className="text-[10px] font-bold text-[#8C3A2B] uppercase">PARTICULAR</span>
+                        <span className="font-bold text-[#140E0A] text-xs sm:text-sm select-all mt-0.5">{order.customerName}</span>
+                      </div>
+                      <div className="bg-white p-2.5 rounded-lg border border-[#E6E0D4] flex flex-col justify-between">
+                        <span className="text-[10px] font-bold text-[#8C3A2B] uppercase">CODE</span>
+                        <span className="font-bold text-[#140E0A] text-xs sm:text-sm select-all mt-0.5">{formatPrice(order.totalAmount)}</span>
+                      </div>
+                      <div className="bg-white p-2.5 rounded-lg border border-[#E6E0D4] flex flex-col justify-between">
+                        <span className="text-[10px] font-bold text-[#8C3A2B] uppercase">REF</span>
+                        <span className="font-bold text-[#140E0A] text-xs sm:text-sm select-all mt-0.5">{order.orderNumber}</span>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
             ) : (

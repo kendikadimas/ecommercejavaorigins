@@ -63,8 +63,6 @@ export default function CustomerProfilePage() {
     router.replace('/login?redirect=/profile');
     return null;
   }
-    );
-  }
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();

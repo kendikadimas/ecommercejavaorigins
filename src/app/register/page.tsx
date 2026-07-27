@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { User, Mail, Lock, Phone, MapPin, UserPlus, AlertCircle } from 'lucide-react';
 import { useCustomerAuth } from '@/context/CustomerAuthContext';
 
-export default function CustomerRegisterPage() {
+function CustomerRegisterInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get('redirect') || '/profile';
@@ -40,9 +40,9 @@ export default function CustomerRegisterPage() {
     setSubmitting(false);
 
     if (res.success) {
-      router.push(redirectUrl);
+      window.location.href = redirectUrl;
     } else {
-      setErrorMsg(res.error || 'Failed to register new account.');
+      setErrorMsg(res.error || 'Gagal membuat akun baru.');
     }
   };
 
@@ -187,5 +187,13 @@ export default function CustomerRegisterPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function CustomerRegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-[85vh] bg-[#FAF8F5] p-12 text-center text-gray-500">Loading...</div>}>
+      <CustomerRegisterInner />
+    </Suspense>
   );
 }

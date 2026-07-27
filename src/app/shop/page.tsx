@@ -1,18 +1,38 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { ShoppingBag, Star, Search, Filter } from 'lucide-react';
 import { ProductType, INITIAL_PRODUCTS } from '@/lib/store';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/format';
 
-export default function ShopPage() {
+function ShopInner() {
+  const searchParams = useSearchParams();
+  const catParam = searchParams.get('cat');
+
   const [products, setProducts] = useState<ProductType[]>(INITIAL_PRODUCTS);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const { addToCart } = useCart();
+
+  useEffect(() => {
+    if (catParam) {
+      if (catParam.toLowerCase().includes('beverage') || catParam.toLowerCase().includes('drink')) {
+        setSelectedCategory('Herbal Drink');
+      } else if (catParam.toLowerCase().includes('food') || catParam.toLowerCase().includes('snack')) {
+        setSelectedCategory('Food & Snacks');
+      } else if (catParam.toLowerCase().includes('care')) {
+        setSelectedCategory('Herbal Care');
+      } else if (catParam.toLowerCase().includes('fashion')) {
+        setSelectedCategory('Fashion');
+      } else {
+        setSelectedCategory(catParam);
+      }
+    }
+  }, [catParam]);
 
   useEffect(() => {
     fetch('/api/products')
@@ -25,13 +45,37 @@ export default function ShopPage() {
       .catch(() => {});
   }, []);
 
-  const categories = ['ALL', ...Array.from(new Set(products.map((p) => p.category)))];
+  const dbCategories = Array.from(new Set(products.map((p) => p.category)));
+  const allCategories = ['ALL', 'Herbal Drink', 'Food & Snacks', 'Herbal Care', 'Fashion'];
+  dbCategories.forEach((cat) => {
+    const isMapped =
+      cat === 'Herbal Beverage' ||
+      cat === 'Herbal Drink' ||
+      cat === 'Food & Snacks' ||
+      cat === 'Food and Snacks' ||
+      cat === 'Herbal Care' ||
+      cat === 'Fashion';
+    if (!isMapped && !allCategories.includes(cat)) {
+      allCategories.push(cat);
+    }
+  });
 
   const filteredProducts = products.filter((p) => {
     const matchesSearch =
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       p.description.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = selectedCategory === 'ALL' || p.category === selectedCategory;
+
+    const matchesCategory =
+      selectedCategory === 'ALL' ||
+      p.category === selectedCategory ||
+      p.category.toLowerCase() === selectedCategory.toLowerCase() ||
+      (selectedCategory === 'Herbal Drink' &&
+        (p.category === 'Herbal Beverage' || p.category === 'Herbal Drink' || p.category === 'Herbal Drinks')) ||
+      (selectedCategory === 'Food & Snacks' &&
+        (p.category.includes('Food') || p.category.includes('Snack'))) ||
+      (selectedCategory === 'Herbal Care' && p.category.toLowerCase().includes('care')) ||
+      (selectedCategory === 'Fashion' && p.category.toLowerCase().includes('fashion'));
+
     return matchesSearch && matchesCategory;
   });
 
@@ -40,20 +84,20 @@ export default function ShopPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="border-b border-[#E6E0D4] pb-8 mb-8">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#EAB308]">
+        <div className="border-b border-[#E6E0D4] pb-8 mb-8 text-left">
+          <span className="text-xs font-extrabold uppercase tracking-widest text-[#EAB308]">
             CATALOG SHOP
           </span>
-          <h1 className="font-serif text-4xl sm:text-5xl font-extrabold text-[#140E0A] mt-1">
+          <h1 className="font-serif text-3xl sm:text-5xl font-extrabold text-[#140E0A] mt-1 tracking-tight">
             Shop All Java Origins Products
           </h1>
-          <p className="text-sm text-[#786C60] mt-2 max-w-2xl">
-            Java Drink is a natural herbal beverage made from carefully selected Indonesian herbs, crafted to bring warmth, comfort, and goodness to your daily routine.
+          <p className="text-sm text-[#5A4D41] mt-3 max-w-3xl leading-relaxed">
+            Java Origins is an e-commerce platform that connects authentic Indonesian offerings with New Zealand market, including herbal drinks, MSME food and snacks, herbal care, fashion, and handicrafts.
           </p>
         </div>
 
         {/* Search & Category Filter Controls */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-10 bg-white p-4 rounded-2xl border border-[#E6E0D4] shadow-sm">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-10 bg-white p-3 sm:p-4 rounded-3xl border border-[#E6E0D4] shadow-xs">
           
           {/* Search bar */}
           <div className="relative w-full md:w-80">
@@ -62,36 +106,39 @@ export default function ShopPage() {
               placeholder="Search products..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-[#F5EFE6] border border-[#E6E0D4] rounded-xl text-sm focus:outline-none focus:border-[#EAB308]"
+              className="w-full pl-10 pr-4 py-2.5 bg-[#F5EFE6] border border-transparent rounded-2xl text-sm text-[#140E0A] placeholder-gray-400 focus:outline-none focus:border-[#EAB308] transition-all"
             />
-            <Search size={18} className="absolute left-3 top-3 text-gray-400" />
+            <Search size={18} className="absolute left-3.5 top-3 text-gray-400" />
           </div>
 
           {/* Category Tabs */}
           <div className="flex flex-wrap items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-            <span className="text-xs font-semibold text-[#786C60] flex items-center mr-1">
-              <Filter size={14} className="mr-1" /> Category:
+            <span className="text-xs font-semibold text-[#786C60] flex items-center mr-1.5 flex-shrink-0">
+              <Filter size={15} className="mr-1 text-[#786C60]" /> Category:
             </span>
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                  selectedCategory === cat
-                    ? 'bg-[#140E0A] text-[#FACC15] shadow-md'
-                    : 'bg-[#F5EFE6] text-[#3A2B20] hover:bg-[#E6E0D4]'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+            {allCategories.map((cat) => {
+              const isSelected = selectedCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-4 py-2 rounded-2xl text-xs font-semibold transition-all flex-shrink-0 ${
+                    isSelected
+                      ? 'bg-[#140E0A] text-white font-bold shadow-md'
+                      : 'bg-[#FAF3EE] text-[#9A3B26] hover:bg-[#F5E6DC]'
+                  }`}
+                >
+                  {cat}
+                </button>
+              );
+            })}
           </div>
 
         </div>
 
         {/* Product Grid */}
         {filteredProducts.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl border border-[#E6E0D4]">
+          <div className="text-center py-20 bg-white rounded-3xl border border-[#E6E0D4]">
             <p className="font-serif text-xl font-bold text-[#140E0A]">No products found</p>
             <p className="text-xs text-gray-500 mt-1">Try matching another search keyword or category filter.</p>
           </div>
@@ -100,7 +147,7 @@ export default function ShopPage() {
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
-                className="bg-white rounded-2xl border border-[#E6E0D4] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
+                className="bg-white rounded-2xl border border-[#E6E0D4] overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
               >
                 <div>
                   {/* Image Container */}
@@ -161,5 +208,13 @@ export default function ShopPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#FAFAF7] p-12 text-center text-gray-400">Loading catalog...</div>}>
+      <ShopInner />
+    </Suspense>
   );
 }

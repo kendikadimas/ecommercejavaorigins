@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Mail, Lock, LogIn, AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, LogIn, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useCustomerAuth } from '@/context/CustomerAuthContext';
 
-export default function CustomerLoginPage() {
+function CustomerLoginInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get('redirect') || '/profile';
@@ -119,5 +119,13 @@ export default function CustomerLoginPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function CustomerLoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-[80vh] bg-[#FAF8F5] p-12 text-center text-gray-500">Loading...</div>}>
+      <CustomerLoginInner />
+    </Suspense>
   );
 }

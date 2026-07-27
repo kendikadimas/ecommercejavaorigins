@@ -49,6 +49,10 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
       const data = await res.json();
       if (res.ok && data.user) {
         setUser(data.user);
+        if (data.redirect) {
+          localStorage.setItem('java_admin_logged_in', 'true');
+          window.location.href = data.redirect;
+        }
         return { success: true };
       }
       return { success: false, error: data.error || 'Login failed' };

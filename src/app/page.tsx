@@ -159,7 +159,7 @@ export default function HomePage() {
                 </span>
 
                 <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight uppercase">
-                  WHAT IS <span className="text-[#FACC15]">JAVA ORIGINS?</span>
+                  Java <span className="text-[#FACC15]">Drink</span>
                 </h2>
 
                 <p className="text-sm sm:text-base text-gray-300 leading-relaxed font-light">

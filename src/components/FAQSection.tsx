@@ -20,10 +20,6 @@ const FAQS = [
     q: 'Can I Drink Java Drink Every Day?',
     a: 'Yes, absolutely! All Java Origins products are brewed from 100% authentic natural herbs, wild forest honey, and organic palm sugar without artificial preservatives.',
   },
-  {
-    q: 'When Does Java Drink Expire?',
-    a: 'Unopened cans and bottles have a shelf life of up to 12 months stored in a cool dry place. Consume within 3 days after opening.',
-  },
 ];
 
 export const FAQSection = () => {

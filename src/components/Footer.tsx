@@ -15,11 +15,11 @@ export const Footer = () => {
     <footer className="bg-[#140E0A] text-white border-t border-[#EAB308]/20 pt-16 pb-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Main Footer 3 Columns */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-16 border-b border-white/10">
+        {/* Main Footer 2 Columns (Navigation removed as it exists in Navbar) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 pb-16 border-b border-white/10">
           
           {/* Column 1: JAVA ORIGINS Logo, Certifications, WhatsApp Us Button */}
-          <div className="md:col-span-5 space-y-5">
+          <div className="space-y-5">
             <Logo variant="light" />
 
             <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-light max-w-md">
@@ -43,74 +43,8 @@ export const Footer = () => {
             </div>
           </div>
 
-          {/* Column 2: NAVIGATION */}
-          <div className="md:col-span-3 space-y-4">
-            <h4 className="font-sans text-xs sm:text-sm font-extrabold text-[#FACC15] uppercase tracking-widest">
-              NAVIGATION
-            </h4>
-
-            <ul className="space-y-2.5 text-xs sm:text-sm text-gray-300">
-              <li>
-                <Link
-                  href="/"
-                  className="inline-block hover:text-[#FACC15] hover:translate-x-1.5 transition-all duration-200"
-                >
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/shop"
-                  className="inline-block hover:text-[#FACC15] hover:translate-x-1.5 transition-all duration-200"
-                >
-                  Shop All Products
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/shop?cat=Herbal+Beverage"
-                  className="inline-block hover:text-[#FACC15] hover:translate-x-1.5 transition-all duration-200"
-                >
-                  Herbal Beverages
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/shop?cat=Honey+%26+Elixir"
-                  className="inline-block hover:text-[#FACC15] hover:translate-x-1.5 transition-all duration-200"
-                >
-                  Honey & Elixirs
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/#ingredients"
-                  className="inline-block hover:text-[#FACC15] hover:translate-x-1.5 transition-all duration-200"
-                >
-                  Ingredients
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/#faq"
-                  className="inline-block hover:text-[#FACC15] hover:translate-x-1.5 transition-all duration-200"
-                >
-                  Product FAQs
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/#partner"
-                  className="inline-block hover:text-[#FACC15] hover:translate-x-1.5 transition-all duration-200"
-                >
-                  Partner Us
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 3: CONTACT (INDONESIA & NEW ZEALAND) */}
-          <div className="md:col-span-4 space-y-5">
+          {/* Column 2: CONTACT (INDONESIA & NEW ZEALAND) */}
+          <div className="space-y-5">
             <h4 className="font-sans text-xs sm:text-sm font-extrabold text-[#FACC15] uppercase tracking-widest">
               CONTACT
             </h4>

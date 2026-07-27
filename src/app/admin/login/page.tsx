@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Lock, Mail, ArrowRight, AlertCircle, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 
-export default function AdminLoginPage() {
+function AdminLoginInner() {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirect') || '/admin/products';
 
@@ -33,11 +33,9 @@ export default function AdminLoginPage() {
         throw new Error(data.error || 'Login failed. Check your username and password.');
       }
 
-      // Store auth token in both localStorage and document.cookie for maximum compatibility
       localStorage.setItem('java_admin_logged_in', 'true');
       document.cookie = 'java_admin_auth=authenticated; path=/; max-age=86400';
 
-      // Perform clean full-page navigation to redirect target
       window.location.href = redirectTo;
     } catch (err: any) {
       setError(err.message || 'Login failed. Use admin@javaorigins.com and admin123');
@@ -50,7 +48,6 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-[#140E0A] flex flex-col items-center justify-center p-4 text-white">
       <div className="w-full max-w-md space-y-8 bg-[#231911] border border-[#FACC15]/30 p-8 sm:p-10 rounded-3xl shadow-2xl relative overflow-hidden">
         
-        {/* Glow background accent */}
         <div className="absolute -top-20 -right-20 w-48 h-48 bg-[#FACC15]/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="text-center space-y-2">
@@ -136,5 +133,13 @@ export default function AdminLoginPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#140E0A] text-white p-12 text-center">Loading admin portal...</div>}>
+      <AdminLoginInner />
+    </Suspense>
   );
 }

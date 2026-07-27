@@ -1,6 +1,17 @@
 {
   "users": [
     {
+      "name": "sellyjuan",
+      "email": "selly26@gmail.com",
+      "password": "Password",
+      "phone": "085866077520",
+      "address": "karangkemiri",
+      "city": "Cilacap",
+      "postalCode": "53272",
+      "id": "usr-1785166330187",
+      "createdAt": "2026-07-27T15:32:10.187Z"
+    },
+    {
       "name": "sellyjuan alya ",
       "email": "sellyjuanalyarsln26@gmail.com",
       "password": "akualya",
@@ -84,32 +95,11 @@
   "paymentMethods": [
     {
       "id": "pay-1",
-      "name": "Bank Central Asia (BCA)",
-      "bankName": "BCA",
-      "accountNumber": "8830-1928-441",
-      "accountName": "PT JAVA ORIGINS INDONESIA",
-      "instructions": "Silakan transfer tepat sesuai total nominal pesanan. Unggah bukti bayar setelah transfer.",
-      "active": true,
-      "createdAt": "2026-07-20T12:00:00.000Z"
-    },
-    {
-      "id": "pay-2",
-      "name": "Bank Mandiri Transfer",
-      "bankName": "Mandiri",
-      "accountNumber": "137-00-1928-882",
-      "accountName": "PT JAVA ORIGINS INDONESIA",
-      "instructions": "Sertakan nomor order pada berita transfer.",
-      "active": true,
-      "createdAt": "2026-07-20T12:00:00.000Z"
-    },
-    {
-      "id": "pay-3",
-      "name": "QRIS All Payment (GoPay/OVO/DANA/BCA)",
-      "bankName": "QRIS",
-      "accountNumber": "ID10293847561",
-      "accountName": "JAVA ORIGINS OFFICIAL",
-      "qrCodeUrl": "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=JAVA_ORIGINS_QRIS_PAYMENT",
-      "instructions": "Scan QRIS menggunakan aplikasi E-Wallet atau Mobile Banking Anda.",
+      "name": "ASB Bank",
+      "bankName": "ASB Bank",
+      "accountNumber": "12-3109-0482910-00",
+      "accountName": "Pure Zealand",
+      "instructions": "particular: your name | code: amount purchased | ref: order number",
       "active": true,
       "createdAt": "2026-07-20T12:00:00.000Z"
     }
@@ -147,6 +137,52 @@
     }
   ],
   "orders": [
+    {
+      "id": "ord-1785166917681",
+      "orderNumber": "JO-20260727-3088",
+      "customerName": "sellyjuan",
+      "customerEmail": "selly26@gmail.com",
+      "customerPhone": "085866077520",
+      "address": "testing saja",
+      "city": "Cilacap",
+      "postalCode": "53272",
+      "totalAmount": 51.99,
+      "paymentMethodId": "pay-1",
+      "paymentMethod": {
+        "id": "pay-1",
+        "name": "ASB Bank",
+        "bankName": "ASB Bank",
+        "accountNumber": "12-3109-0482910-00",
+        "accountName": "Pure Zealand",
+        "instructions": "particular: your name | code: amount purchased | ref: order number",
+        "active": true,
+        "createdAt": "2026-07-20T12:00:00.000Z"
+      },
+      "status": "SHIPPED",
+      "checkoutType": "WEB",
+      "notes": "",
+      "items": [
+        {
+          "id": "item-1785166917681-0",
+          "orderId": "ord-1785166917681",
+          "productId": "prod-2",
+          "productName": "Java Origins Ginger Warmth Elixir (250ml Can)",
+          "price": 18.5,
+          "quantity": 2
+        },
+        {
+          "id": "item-1785166917681-1",
+          "orderId": "ord-1785166917681",
+          "productId": "prod-3",
+          "productName": "Java Origins Turmeric Curcumin Drink (250ml Can)",
+          "price": 14.99,
+          "quantity": 1
+        }
+      ],
+      "createdAt": "2026-07-27T15:41:57.681Z",
+      "updatedAt": "2026-07-27T15:43:22.113Z",
+      "paymentProofUrl": "/uploads/1785166932302-Screenshot_2026-05-06_112751.png"
+    },
     {
       "id": "ord-1784562240213",
       "orderNumber": "JO-20260720-6560",
@@ -327,6 +363,48 @@
     }
   ],
   "emailLogs": [
+    {
+      "id": "email-1785167002115",
+      "to": "selly26@gmail.com",
+      "subject": "Update Status Pesanan #JO-20260727-3088 - Java Origins",
+      "body": "Halo sellyjuan, status pesanan Anda #JO-20260727-3088 telah diperbarui menjadi: Dalam Pengiriman (SHIPPED).",
+      "createdAt": "2026-07-27T15:43:22.115Z"
+    },
+    {
+      "id": "email-1785166999764",
+      "to": "selly26@gmail.com",
+      "subject": "Update Status Pesanan #JO-20260727-3088 - Java Origins",
+      "body": "Halo sellyjuan, status pesanan Anda #JO-20260727-3088 telah diperbarui menjadi: Pembayaran Disetujui (PAID).",
+      "createdAt": "2026-07-27T15:43:19.764Z"
+    },
+    {
+      "id": "email-1785166989397",
+      "to": "selly26@gmail.com",
+      "subject": "Update Status Pesanan #JO-20260727-3088 - Java Origins",
+      "body": "Halo sellyjuan, status pesanan Anda #JO-20260727-3088 telah diperbarui menjadi: Dalam Pengiriman (SHIPPED).",
+      "createdAt": "2026-07-27T15:43:09.397Z"
+    },
+    {
+      "id": "email-1785166980719",
+      "to": "selly26@gmail.com",
+      "subject": "Update Status Pesanan #JO-20260727-3088 - Java Origins",
+      "body": "Halo sellyjuan, status pesanan Anda #JO-20260727-3088 telah diperbarui menjadi: Pembayaran Disetujui (PAID).",
+      "createdAt": "2026-07-27T15:43:00.719Z"
+    },
+    {
+      "id": "email-1785166932363",
+      "to": "selly26@gmail.com",
+      "subject": "Update Status Pesanan #JO-20260727-3088 - Java Origins",
+      "body": "Halo sellyjuan, status pesanan Anda #JO-20260727-3088 telah diperbarui menjadi: Menunggu ACC Admin (Bukti Bayar Terunggah).",
+      "createdAt": "2026-07-27T15:42:12.363Z"
+    },
+    {
+      "id": "email-1785166917683",
+      "to": "selly26@gmail.com",
+      "subject": "Konfirmasi Pemesanan #JO-20260727-3088 - Java Origins",
+      "body": "Halo sellyjuan, pesanan Anda #JO-20260727-3088 senilai $51.99 NZD telah kami terima. Silakan lakukan pembayaran dan unggah bukti transfer.",
+      "createdAt": "2026-07-27T15:41:57.683Z"
+    },
     {
       "id": "email-1784562325614",
       "to": "sellyjuanalyarsln26@gmail.com",

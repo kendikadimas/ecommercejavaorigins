@@ -377,7 +377,7 @@ export default function CheckoutPage() {
               {checkoutFlow === 'WEB' && (
                 <div className="space-y-4 pt-4 border-t border-[#F5EFE6]">
                   <h3 className="text-lg font-bold text-[#140E0A]">
-                    Choose Bank / QRIS Payment Method
+                    Secure Checkout via Bank Transfer
                   </h3>
 
                   <div className="space-y-3">
@@ -387,34 +387,55 @@ export default function CheckoutPage() {
                         <label
                           key={method.id}
                           onClick={() => setSelectedMethodId(method.id)}
-                          className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                          className={`block p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all ${
                             isSelected
                               ? 'border-[#EAB308] bg-[#FFFDF6] shadow-sm'
                               : 'border-[#E6E0D4] bg-[#FAFAF7] hover:border-[#EAB308]/50'
                           }`}
                         >
-                          <div className="flex items-center space-x-3">
-                            <input
-                              type="radio"
-                              name="paymentMethod"
-                              checked={isSelected}
-                              onChange={() => setSelectedMethodId(method.id)}
-                              className="text-[#EAB308] focus:ring-[#EAB308]"
-                            />
-                            <div>
-                              <p className="text-sm font-bold text-[#140E0A]">
-                                {method.name} ({method.bankName})
-                              </p>
-                              <p className="text-xs text-[#786C60] font-normal">
-                                Acc: <span className="font-mono font-semibold">{method.accountNumber}</span> a/n {method.accountName}
-                              </p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <input
+                                type="radio"
+                                name="paymentMethod"
+                                checked={isSelected}
+                                onChange={() => setSelectedMethodId(method.id)}
+                                className="text-[#EAB308] focus:ring-[#EAB308]"
+                              />
+                              <div>
+                                <p className="text-base font-extrabold text-[#140E0A]">
+                                  {method.bankName}
+                                </p>
+                                <p className="text-xs text-[#786C60] font-semibold mt-0.5">
+                                  Account Name: <span className="font-bold text-[#140E0A]">{method.accountName}</span>
+                                </p>
+                                {method.accountNumber && (
+                                  <p className="text-xs text-[#786C60] font-semibold mt-0.5">
+                                    Account Number: <span className="font-mono font-extrabold text-[#140E0A] select-all">{method.accountNumber}</span>
+                                  </p>
+                                )}
+                              </div>
                             </div>
+
+                            {method.qrCodeUrl ? (
+                              <QrCode size={24} className="text-[#EAB308]" />
+                            ) : (
+                              <Building2 size={24} className="text-[#786C60]" />
+                            )}
                           </div>
 
-                          {method.qrCodeUrl ? (
-                            <QrCode size={24} className="text-[#EAB308]" />
-                          ) : (
-                            <Building2 size={24} className="text-[#786C60]" />
+                          {method.instructions && (
+                            <div className="mt-3 pt-3 border-t border-[#E6E0D4]/70 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono text-[#3A2B20] bg-[#F5EFE6] p-3 rounded-xl">
+                              <div className="bg-white/90 px-2.5 py-1.5 rounded-lg border border-[#E6E0D4] text-[11px]">
+                                <span className="font-bold text-[#8C3A2B] uppercase">PARTICULAR:</span> <span className="font-bold text-[#140E0A]">{form.customerName || 'Your Name'}</span>
+                              </div>
+                              <div className="bg-white/90 px-2.5 py-1.5 rounded-lg border border-[#E6E0D4] text-[11px]">
+                                <span className="font-bold text-[#8C3A2B] uppercase">CODE:</span> <span className="font-bold text-[#140E0A]">{formatPrice(subtotal)}</span>
+                              </div>
+                              <div className="bg-white/90 px-2.5 py-1.5 rounded-lg border border-[#E6E0D4] text-[11px]">
+                                <span className="font-bold text-[#8C3A2B] uppercase">REF:</span> <span className="font-bold text-[#140E0A]">Auto Order ID</span>
+                              </div>
+                            </div>
                           )}
                         </label>
                       );
