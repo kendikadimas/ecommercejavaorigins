@@ -172,3 +172,29 @@ SMTP_FROM="Java Origins <noreply@javaorigins.co.nz>"
 - Perubahan kode yang berhubungan dengan env baru (SMTP) dan guard secret perlu
   verifikasi pasca-deploy: coba alur forgot-password di production dengan email
   asli setelah SMTP terisi.
+
+## Google OAuth (Login / Register dengan Google)
+
+Fitur: tombol "Continue with Google" di halaman login & register.
+
+**Cara mengaktifkan (wajib):**
+1. Buat OAuth client di Google Cloud Console
+   (`https://console.cloud.google.com/apis/credentials`).
+2. Tambahkan `Authorized redirect URI` yang **persis sama** dengan
+   `GOOGLE_REDIRECT_URI`.
+3. Isi env vars di cPanel → Node.js App → env:
+   ```
+   GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=xxxx
+   GOOGLE_REDIRECT_URI=https://javaorigins.co.nz/api/auth/google/callback
+   ```
+   (Dev lokal: `http://localhost:3000/api/auth/google/callback`)
+
+**Alur:** `/api/auth/google` (redirect + state cookie) → Google consent →
+`/api/auth/google/callback` (exchange code, create-or-login user by email,
+set session cookie, redirect). State diverifikasi anti-CSRF.
+
+**Perilaku:** jika email Google sudah terdaftar (via password), akun yang sama
+di-login. Jika belum, user baru dibuat (password random tak terguessable).
+Satu-satunya `Any` auth boundary tetap cookie HMAC yang sama dengan login biasa.
+

@@ -6,18 +6,20 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, LogIn, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useCustomerAuth } from '@/context/CustomerAuthContext';
 import { safeRedirect } from '@/lib/redirect';
+import { GoogleSignInButton } from '@/components/GoogleSignInButton';
 
 function CustomerLoginInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = safeRedirect(searchParams.get('redirect'), '/profile');
+  const googleError = searchParams.get('error') === 'google';
 
   const { login } = useCustomerAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState(googleError ? 'Google sign-in failed. Please try again or log in with your email.' : '');
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -58,6 +60,14 @@ function CustomerLoginInner() {
             <span>{errorMsg}</span>
           </div>
         )}
+
+        <GoogleSignInButton redirect={redirectUrl} />
+
+        <div className="flex items-center gap-3">
+          <span className="flex-1 h-px bg-[#C9D3BE]" />
+          <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">or</span>
+          <span className="flex-1 h-px bg-[#C9D3BE]" />
+        </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
@@ -113,7 +123,7 @@ function CustomerLoginInner() {
             href="/forgot-password"
             className="text-xs font-semibold text-[#276F27] hover:underline"
           >
-            Lupa Password?
+            Forgot Password?
           </Link>
         </div>
 

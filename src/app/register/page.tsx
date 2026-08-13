@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { User, Mail, Lock, Phone, MapPin, UserPlus, AlertCircle } from 'lucide-react';
 import { useCustomerAuth } from '@/context/CustomerAuthContext';
 import { safeRedirect } from '@/lib/redirect';
+import { GoogleSignInButton } from '@/components/GoogleSignInButton';
 
 function CustomerRegisterInner() {
   const router = useRouter();
@@ -43,7 +44,7 @@ function CustomerRegisterInner() {
     if (res.success) {
       window.location.href = redirectUrl;
     } else {
-      setErrorMsg(res.error || 'Gagal membuat akun baru.');
+      setErrorMsg(res.error || 'Failed to create account.');
     }
   };
 
@@ -65,6 +66,14 @@ function CustomerRegisterInner() {
             <span>{errorMsg}</span>
           </div>
         )}
+
+        <GoogleSignInButton redirect={redirectUrl} label="Sign up with Google" />
+
+        <div className="flex items-center gap-3">
+          <span className="flex-1 h-px bg-[#C9D3BE]" />
+          <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">or</span>
+          <span className="flex-1 h-px bg-[#C9D3BE]" />
+        </div>
 
         <form onSubmit={handleRegister} className="space-y-4">
           <div>
