@@ -30,6 +30,7 @@ export default function AdminProductsPage() {
   // Search & Filter state
   const [search, setSearch] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('ALL');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'priceHigh' | 'priceLow' | 'stockLow'>('newest');
 
   // Category Management State
   const [newCatInput, setNewCatInput] = useState('');
@@ -187,13 +188,30 @@ export default function AdminProductsPage() {
     fetchProducts();
   };
 
-  const filteredProducts = products.filter((p) => {
-    const matchesSearch =
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.description.toLowerCase().includes(search.toLowerCase());
-    const matchesCat = selectedCategoryFilter === 'ALL' || p.category === selectedCategoryFilter;
-    return matchesSearch && matchesCat;
-  });
+  const filteredProducts = products
+    .filter((p) => {
+      const matchesSearch =
+        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.description.toLowerCase().includes(search.toLowerCase());
+      const matchesCat = selectedCategoryFilter === 'ALL' || p.category === selectedCategoryFilter;
+      return matchesSearch && matchesCat;
+    })
+    .sort((a, b) => {
+      const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      switch (sortOrder) {
+        case 'oldest':
+          return ta - tb;
+        case 'priceHigh':
+          return b.price - a.price;
+        case 'priceLow':
+          return a.price - b.price;
+        case 'stockLow':
+          return a.stock - b.stock;
+        default:
+          return tb - ta; // newest
+      }
+    });
 
   return (
     <div className="space-y-6 font-sans">
@@ -291,6 +309,29 @@ export default function AdminProductsPage() {
                 {c}
               </option>
             ))}
+          </select>
+
+          <span
+            className={`text-xs font-semibold flex items-center ${
+              isLight ? 'text-[#5C4D40]' : 'text-gray-400'
+            }`}
+          >
+            Sort:
+          </span>
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value as typeof sortOrder)}
+            className={`border px-3 py-2 rounded-xl text-xs font-semibold focus:outline-none ${
+              isLight
+                ? 'bg-[#FAF8F5] border-[#D6CBB8] text-[#2C1D11]'
+                : 'bg-[#140E0A] border-white/10 text-[#FACC15]'
+            }`}
+          >
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="priceHigh">Price: High to Low</option>
+            <option value="priceLow">Price: Low to High</option>
+            <option value="stockLow">Stock: Low to High</option>
           </select>
         </div>
       </div>

@@ -18,6 +18,7 @@ export default function AdminOrdersPage() {
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<OrderType | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
   const [search, setSearch] = useState('');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'totalHigh' | 'totalLow'>('newest');
 
   const fetchOrders = async () => {
     try {
@@ -57,17 +58,32 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const filteredOrders = orders.filter((o) => {
-    if (filterStatus !== 'ALL' && o.status !== filterStatus) return false;
-    if (!search.trim()) return true;
-    const q = search.trim().toLowerCase();
-    return (
-      (o.orderNumber || '').toLowerCase().includes(q) ||
-      (o.customerName || '').toLowerCase().includes(q) ||
-      (o.customerEmail || '').toLowerCase().includes(q) ||
-      (o.customerPhone || '').toLowerCase().includes(q)
-    );
-  });
+  const filteredOrders = orders
+    .filter((o) => {
+      if (filterStatus !== 'ALL' && o.status !== filterStatus) return false;
+      if (!search.trim()) return true;
+      const q = search.trim().toLowerCase();
+      return (
+        (o.orderNumber || '').toLowerCase().includes(q) ||
+        (o.customerName || '').toLowerCase().includes(q) ||
+        (o.customerEmail || '').toLowerCase().includes(q) ||
+        (o.customerPhone || '').toLowerCase().includes(q)
+      );
+    })
+    .sort((a, b) => {
+      const ta = new Date(a.createdAt).getTime();
+      const tb = new Date(b.createdAt).getTime();
+      switch (sortOrder) {
+        case 'oldest':
+          return ta - tb;
+        case 'totalHigh':
+          return b.totalAmount - a.totalAmount;
+        case 'totalLow':
+          return a.totalAmount - b.totalAmount;
+        default:
+          return tb - ta; // newest
+      }
+    });
 
   const getStatusBadge = (status: OrderType['status']) => {
     switch (status) {
@@ -155,19 +171,19 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
-      {/* Search Bar */}
+      {/* Search & Sort */}
       <div
-        className={`flex items-center gap-2 px-4 py-3 rounded-xl border ${
+        className={`flex flex-col sm:flex-row items-center gap-2 px-4 py-3 rounded-xl border ${
           isLight ? 'bg-white border-[#E6DEC9]' : 'bg-[#231911] border-white/10'
         }`}
       >
-        <Search size={16} className={isLight ? 'text-[#B45309]' : 'text-[#FACC15]'} />
+        <Search size={16} className={`hidden sm:block ${isLight ? 'text-[#B45309]' : 'text-[#FACC15]'}`} />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by order number, customer name, email, or phone..."
-          className="flex-1 bg-transparent text-sm focus:outline-none placeholder-gray-400 font-normal"
+          className="flex-1 w-full bg-transparent text-sm focus:outline-none placeholder-gray-400 font-normal"
         />
         {search && (
           <button
@@ -179,6 +195,23 @@ export default function AdminOrdersPage() {
             Clear
           </button>
         )}
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <span className={`text-xs font-bold ${isLight ? 'text-[#5C4D40]' : 'text-gray-400'}`}>Sort:</span>
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value as typeof sortOrder)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold border focus:outline-none cursor-pointer ${
+              isLight
+                ? 'bg-[#FAF8F5] border-[#D6CBB8] text-[#2C1D11] focus:border-[#D97706]'
+                : 'bg-[#140E0A] border-white/10 text-white focus:border-[#FACC15]'
+            }`}
+          >
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="totalHigh">Total: High to Low</option>
+            <option value="totalLow">Total: Low to High</option>
+          </select>
+        </div>
       </div>
 
       {/* Orders Table */}
