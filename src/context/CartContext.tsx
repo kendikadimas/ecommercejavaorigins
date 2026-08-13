@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { ProductType } from '@/lib/store';
+import { ProductType } from '@/lib/seed-data';
 
 export interface CartItem {
   product: ProductType;
@@ -51,8 +51,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCart((prev) => {
       const existingIdx = prev.findIndex((item) => item.product.id === product.id);
       if (existingIdx > -1) {
-        const updated = [...prev];
-        updated[existingIdx].quantity += quantity;
+        // immutable update — never mutate the item object (React StrictMode double-invokes updaters
+        // in dev; mutating would double-add the quantity)
+        const updated = prev.map((item, i) =>
+          i === existingIdx ? { ...item, quantity: item.quantity + quantity } : item
+        );
         return updated;
       }
       return [...prev, { product, quantity }];
