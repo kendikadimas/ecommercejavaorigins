@@ -303,6 +303,9 @@ async function attachItems(orders: OrderType[]): Promise<OrderType[]> {
   return orders;
 }
 
+// throttle for releaseExpiredPendingOrders (module-level, survives across calls)
+let lastExpiryScan = 0;
+
 export const store = {
   // USERS
   async getUsers(): Promise<UserType[]> {
@@ -731,12 +734,18 @@ export const store = {
 
   // PENDING_PAYMENT orders older than 1 day: release the reserved stock back to the shelf.
   // Lazy check — runs whenever orders are read (no cron available on shared hosting).
+  // Throttled so a burst of reads doesn't rescan every time.
   // ponytail: naive scan of pending orders per read; fine at this scale.
   async releaseExpiredPendingOrders(): Promise<number> {
+    // throttle: run at most once per 5 minutes
+    const now = Date.now();
+    if (now - lastExpiryScan < 5 * 60 * 1000) return 0;
+    lastExpiryScan = now;
+
     const db = await getDb();
     const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const [rows] = await db.query<RowDataPacket[]>(
-      'SELECT o.id FROM orders o WHERE o.status = ? AND o.created_at < ?',
+      "SELECT o.id FROM orders o WHERE o.status = ? AND o.checkout_type != 'WHATSAPP' AND o.created_at < ?",
       ['PENDING_PAYMENT', cutoff]
     );
     let released = 0;
@@ -780,8 +789,8 @@ export const store = {
         if (cust.length && cust[0].customer_email) {
           this.sendEmailNotification(
             cust[0].customer_email as string,
-            `Pesanan #${cust[0].order_number} Dibatalkan - Java Origins`,
-            `Halo ${cust[0].customer_name}, pesanan #${cust[0].order_number} dibatalkan otomatis karena pembayaran tidak selesai dalam 24 jam. Stok telah dikembalikan. Silakan buat pesanan baru jika masih tertarik.`
+            `Order #${cust[0].order_number} Cancelled - Java Origins`,
+            `Hi ${cust[0].customer_name}, order #${cust[0].order_number} was automatically cancelled because payment was not completed within 24 hours. Stock has been returned. Please place a new order if you are still interested.`
           ).catch(() => {});
         }
       } catch (err) {
@@ -814,6 +823,7 @@ export const store = {
 
   async getOrderById(id: string): Promise<OrderType | null> {
     const db = await getDb();
+    await this.releaseExpiredPendingOrders();
     const [rows] = await db.query<OrderRow[]>(
       ORDER_SELECT + ' WHERE o.id = ? OR o.order_number = ? LIMIT 1',
       [id, id]
@@ -912,10 +922,10 @@ export const store = {
       if (data.customerEmail) {
         this.sendEmailNotification(
           data.customerEmail,
-          `Konfirmasi Pemesanan #${orderNum} - Java Origins`,
-          `Halo ${data.customerName}, pesanan Anda #${orderNum} senilai $${data.totalAmount.toFixed(
-            2
-          )} NZD telah kami terima. Silakan lakukan pembayaran dan unggah bukti transfer.`
+         `Order Confirmation #${orderNum} - Java Origins`,
+         `Hi ${data.customerName}, your order #${orderNum} worth $${data.totalAmount.toFixed(
+           2
+         )} NZD has been received. Please complete the payment and upload your transfer proof.`
         ).catch(() => {});
       }
 
@@ -1020,16 +1030,16 @@ export const store = {
     }
 
     let statusText: string = status;
-    if (status === 'WAITING_APPROVAL') statusText = 'Menunggu ACC Admin (Bukti Bayar Terunggah)';
-    if (status === 'PAID') statusText = 'Pembayaran Disetujui (PAID)';
-    if (status === 'SHIPPED') statusText = 'Dalam Pengiriman (SHIPPED)';
-    if (status === 'REJECTED') statusText = 'Ditolak (REJECTED)';
+    if (status === 'WAITING_APPROVAL') statusText = 'Awaiting Admin Approval (Proof Uploaded)';
+    if (status === 'PAID') statusText = 'Payment Approved (PAID)';
+    if (status === 'SHIPPED') statusText = 'Shipped (SHIPPED)';
+    if (status === 'REJECTED') statusText = 'Rejected (REJECTED)';
 
     if (existing.customerEmail) {
       this.sendEmailNotification(
         existing.customerEmail,
-        `Update Status Pesanan #${existing.orderNumber} - Java Origins`,
-        `Halo ${existing.customerName}, status pesanan Anda #${existing.orderNumber} telah diperbarui menjadi: ${statusText}.`
+        `Order Status Update #${existing.orderNumber} - Java Origins`,
+        `Hi ${existing.customerName}, the status of your order #${existing.orderNumber} has been updated to: ${statusText}.`
       ).catch(() => {});
     }
 

@@ -175,7 +175,10 @@ export default function CheckoutPage() {
         const message = `*HELLO JAVA ORIGINS ADMIN!*\nI would like to place an order via WhatsApp.\n\n*Order ID:* ${orderData.orderNumber}\n*Customer Name:* ${form.customerName}\n*Email:* ${form.customerEmail}\n*Phone Number:* ${form.customerPhone}\n*Address:* ${form.address}, ${form.city} (${form.postalCode})\n\n*Product List:*\n${itemListText}\n\n*Shipping:* ${SHIPPING_OPTIONS.find((o) => o.id === shippingId)?.label} (${formatPrice(shipCost)})\n*Total Payment:* ${formatPrice(serverTotal)}\n*Notes:* ${form.notes || '-'}\n\nPlease help to process this order, thank you!`;
 
         const waUrl = `https://wa.me/${adminWa}?text=${encodeURIComponent(message)}`;
-        window.location.href = waUrl;
+        // open WhatsApp in a new tab, then show the order page so the customer can
+        // see their order + tracking without hunting for it
+        window.open(waUrl, '_blank', 'noopener,noreferrer');
+        router.push(`/order/${orderData.id}`);
       } else {
         router.push(`/order/${orderData.id}`);
       }

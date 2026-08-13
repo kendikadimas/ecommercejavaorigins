@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { CheckCircle2, Clock, Upload, ArrowLeft, Building2, AlertCircle, ShieldCheck, Truck, XCircle } from 'lucide-react';
+import { CheckCircle2, Clock, Upload, ArrowLeft, Building2, AlertCircle, ShieldCheck, Truck, XCircle, MessageCircle } from 'lucide-react';
 import { OrderType } from '@/lib/store';
 import { formatPrice } from '@/lib/format';
 
@@ -162,7 +162,20 @@ export default function OrderStatusPage() {
                 Order #{order.orderNumber}
               </h1>
             </div>
-            <div>{getStatusBadge(order.status)}</div>
+            <div className="flex flex-wrap items-center gap-2">
+              <a
+                href={`https://wa.me/6282130613460?text=${encodeURIComponent(
+                  `Hi Java Origins Admin! I have a question about my order #${order.orderNumber}.`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-xl text-xs shadow transition-all"
+              >
+                <MessageCircle size={15} />
+                <span>Contact Admin</span>
+              </a>
+              {getStatusBadge(order.status)}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
@@ -267,6 +280,21 @@ export default function OrderStatusPage() {
 
           {/* Right Column: Upload Bukti Pembayaran */}
           <div className="md:col-span-6 bg-white p-6 rounded-2xl border border-[#B4D397] shadow-sm space-y-4">
+            {order.checkoutType === 'WHATSAPP' ? (
+              <>
+                <h3 className="text-lg font-bold border-b border-[#EAF3DB] pb-3 text-[#140E0A]">
+                  Order via WhatsApp
+                </h3>
+                <div className="p-4 bg-[#F0F7E9] border border-[#CBE0B4] rounded-xl space-y-2">
+                  <p className="text-sm font-bold text-[#276F27]">Your order was placed via WhatsApp.</p>
+                  <p className="text-xs text-[#5A7543] leading-relaxed">
+                    No payment proof upload is needed — you discussed the order directly with our admin on WhatsApp. Reference your Order ID if you have any questions.
+                  </p>
+                  <p className="text-xs font-bold text-[#276F27]">Order ID: {order.orderNumber}</p>
+                </div>
+              </>
+            ) : (
+              <>
             <h3 className="text-lg font-bold border-b border-[#EAF3DB] pb-3 text-[#140E0A]">
               Submit Payment Proof
             </h3>
@@ -322,6 +350,8 @@ export default function OrderStatusPage() {
               <p>Our admin will check the transfer proof within 24 hours.</p>
               <p>Need quick confirmation? Contact Admin WhatsApp and attach your Order ID.</p>
             </div>
+              </>
+            )}
           </div>
 
         </div>
