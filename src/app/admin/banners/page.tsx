@@ -46,7 +46,7 @@ export default function AdminBannersPage() {
     title: '',
     subtitle: '',
     imageUrl: '',
-    linkUrl: '/shop',
+    linkUrl: '',
     active: true,
     sortOrder: '1',
   });
@@ -55,10 +55,10 @@ export default function AdminBannersPage() {
     setErrorMsg('');
     setEditingBanner(null);
     setFormData({
-      title: 'THE JAVA ORIGINS DRINK',
-      subtitle: 'Java Drink is a natural herbal beverage made from carefully selected Indonesian herbs...',
-      imageUrl: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=1600&q=80',
-      linkUrl: '/shop',
+      title: '',
+      subtitle: '',
+      imageUrl: '',
+      linkUrl: '',
       active: true,
       sortOrder: String(banners.length + 1),
     });
@@ -340,12 +340,12 @@ export default function AdminBannersPage() {
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Judul Banner *</label>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Banner Title <span className="font-normal text-gray-400">(optional)</span></label>
                 <input
                   type="text"
-                  required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="e.g. Welcome to Java Origins"
                   className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none font-normal ${
                     isLight ? 'bg-[#FAF8F5] border-[#D6CBB8] text-[#2C1D11]' : 'bg-[#140E0A] border-white/10 text-white'
                   }`}
@@ -353,11 +353,12 @@ export default function AdminBannersPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Sub-Judul / Deskripsi Banner</label>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Subtitle <span className="font-normal text-gray-400">(optional)</span></label>
                 <textarea
                   rows={2}
                   value={formData.subtitle}
                   onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
+                  placeholder="Short description (optional)"
                   className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none font-normal ${
                     isLight ? 'bg-[#FAF8F5] border-[#D6CBB8] text-[#2C1D11]' : 'bg-[#140E0A] border-white/10 text-white'
                   }`}
@@ -402,7 +403,7 @@ export default function AdminBannersPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Link Tujuan (Routing URL)</label>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Link Target <span className="font-normal text-gray-400">(optional — shows "Shop" button)</span></label>
                   <input
                     type="text"
                     value={formData.linkUrl}
@@ -410,7 +411,7 @@ export default function AdminBannersPage() {
                     className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none font-normal ${
                       isLight ? 'bg-[#FAF8F5] border-[#D6CBB8] text-[#2C1D11]' : 'bg-[#140E0A] border-white/10 text-white'
                     }`}
-                    placeholder="/shop"
+                    placeholder="e.g. /shop (leave empty to hide button)"
                   />
                 </div>
                 <div>

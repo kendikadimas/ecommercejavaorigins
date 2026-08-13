@@ -112,34 +112,38 @@ export const HeroSlider = () => {
           }}
         />
 
-        {/* Hero Overlay Text */}
-        <div className="absolute inset-0 flex items-center justify-center text-center p-6 sm:p-12 pointer-events-none">
-          <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 text-white pointer-events-auto">
-            
-            {currentBanner.title && (
-              <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight uppercase drop-shadow-md">
-                {currentBanner.title}
-              </h1>
-            )}
+        {/* Hero Overlay Text — only when there is content */}
+        {currentBanner.title || currentBanner.subtitle || currentBanner.linkUrl ? (
+          <div className="absolute inset-0 flex items-center justify-center text-center p-6 sm:p-12 pointer-events-none">
+            <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 text-white pointer-events-auto">
+              
+              {currentBanner.title && (
+                <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight uppercase drop-shadow-md">
+                  {currentBanner.title}
+                </h1>
+              )}
 
-            {currentBanner.subtitle && (
-              <p className="text-sm sm:text-lg text-gray-200 font-light max-w-2xl mx-auto leading-relaxed drop-shadow">
-                {currentBanner.subtitle}
-              </p>
-            )}
+              {currentBanner.subtitle && (
+                <p className="text-sm sm:text-lg text-gray-200 font-light max-w-2xl mx-auto leading-relaxed drop-shadow">
+                  {currentBanner.subtitle}
+                </p>
+              )}
 
-            <div className="pt-2">
-              <Link
-                href={currentBanner.linkUrl || '/shop'}
-                className="inline-flex items-center space-x-2 bg-[#FACC15] text-[#140E0A] font-extrabold px-8 py-3.5 rounded-full hover:bg-[#EAB308] transition-all transform hover:scale-105 shadow-2xl text-xs sm:text-sm uppercase tracking-wider"
-              >
-                <span>Shop the Collection</span>
-                <ArrowRight size={16} />
-              </Link>
+              {currentBanner.linkUrl && (
+                <div className="pt-2">
+                  <Link
+                    href={currentBanner.linkUrl}
+                    className="inline-flex items-center space-x-2 bg-[#FACC15] text-[#140E0A] font-extrabold px-8 py-3.5 rounded-full hover:bg-[#EAB308] transition-all transform hover:scale-105 shadow-2xl text-xs sm:text-sm uppercase tracking-wider"
+                  >
+                    <span>Shop the Collection</span>
+                    <ArrowRight size={16} />
+                  </Link>
+                </div>
+              )}
+
             </div>
-
           </div>
-        </div>
+        ) : null}
 
         {/* Left & Right Slide Navigation Arrows */}
         {banners.length > 1 && (

@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       title: body.title || '',
       subtitle: body.subtitle || '',
       imageUrl: body.imageUrl,
-      linkUrl: body.linkUrl || '/shop',
+      linkUrl: body.linkUrl || '',
       active: body.active ?? true,
       sortOrder: body.sortOrder !== undefined && body.sortOrder !== null && body.sortOrder !== ''
         ? Number(body.sortOrder)
