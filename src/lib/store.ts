@@ -710,15 +710,70 @@ export const store = {
     await db.query('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, userId]);
   },
 
+  // PENDING_PAYMENT orders older than 1 day: release the reserved stock back to the shelf.
+  // Lazy check — runs whenever orders are read (no cron available on shared hosting).
+  // ponytail: naive scan of pending orders per read; fine at this scale.
+  async releaseExpiredPendingOrders(): Promise<number> {
+    const db = await getDb();
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const [rows] = await db.query<RowDataPacket[]>(
+      'SELECT o.id FROM orders o WHERE o.status = ? AND o.created_at < ?',
+      ['PENDING_PAYMENT', cutoff]
+    );
+    let released = 0;
+    for (const row of rows) {
+      const orderId = row.id as string;
+      const conn = await db.getConnection();
+      try {
+        await conn.beginTransaction();
+        // re-verify still pending inside the tx (avoid racing an admin action)
+        const [cur] = await conn.query<RowDataPacket[]>(
+          'SELECT status FROM orders WHERE id = ? FOR UPDATE',
+          [orderId]
+        );
+        if (!cur.length || cur[0].status !== 'PENDING_PAYMENT') {
+          await conn.rollback();
+          continue;
+        }
+        const [items] = await conn.query<RowDataPacket[]>(
+          'SELECT product_id, quantity FROM order_items WHERE order_id = ?',
+          [orderId]
+        );
+        for (const item of items) {
+          if (!item.product_id) continue;
+          await conn.query('UPDATE products SET stock = stock + ? WHERE id = ?', [
+            Number(item.quantity),
+            item.product_id,
+          ]);
+        }
+        await conn.query('UPDATE orders SET status = ?, updated_at = ? WHERE id = ?', [
+          'REJECTED',
+          new Date().toISOString(),
+          orderId,
+        ]);
+        await conn.commit();
+        released++;
+      } catch (err) {
+        await conn.rollback();
+        throw err;
+      } finally {
+        conn.release();
+      }
+    }
+    return released;
+  },
+
   // ORDERS
   async getOrders(): Promise<OrderType[]> {
     const db = await getDb();
+    await this.releaseExpiredPendingOrders();
     const [rows] = await db.query<OrderRow[]>(ORDER_SELECT + ' ORDER BY o.created_at DESC');
     return attachItems(rows.map(mapOrder));
   },
 
   async getOrdersByCustomerEmail(email: string): Promise<OrderType[]> {
     const db = await getDb();
+    await this.releaseExpiredPendingOrders();
     const [rows] = await db.query<OrderRow[]>(
       ORDER_SELECT + ' WHERE LOWER(o.customer_email) = LOWER(?) ORDER BY o.created_at DESC',
       [email]
@@ -728,6 +783,7 @@ export const store = {
 
   async getOrderById(id: string): Promise<OrderType | null> {
     const db = await getDb();
+    await this.releaseExpiredPendingOrders();
     const [rows] = await db.query<OrderRow[]>(
       ORDER_SELECT + ' WHERE o.id = ? OR o.order_number = ? LIMIT 1',
       [id, id]

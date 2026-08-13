@@ -10,7 +10,7 @@ export interface CartItem {
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: ProductType, quantity?: number) => void;
+  addToCart: (product: ProductType, quantity?: number, openDrawer?: boolean) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -49,7 +49,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [cart]);
 
-  const addToCart = (product: ProductType, quantity = 1) => {
+  const addToCart = (product: ProductType, quantity = 1, openDrawer = true) => {
     setCart((prev) => {
       const existingIdx = prev.findIndex((item) => item.product.id === product.id);
       if (existingIdx > -1) {
@@ -63,7 +63,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return [...prev, { product, quantity }];
     });
     setLastAdded({ name: product.name, ts: Date.now() });
-    setIsCartOpen(true);
+    if (openDrawer) setIsCartOpen(true);
   };
 
   const removeFromCart = (productId: string) => {
