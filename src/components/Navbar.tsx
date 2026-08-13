@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ShoppingBag, Search, Menu, X, User, ChevronDown, ChevronUp } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { Logo } from '@/components/Logo';
@@ -12,27 +13,37 @@ export const Navbar = () => {
   const { user } = useCustomerAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileCategoriesOpen, setMobileCategoriesOpen] = useState(false);
+  const pathname = usePathname();
+  const activeCat =
+    typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('cat') || '' : '';
+
+  const isActive = (href: string) => {
+    const [path, query] = href.split('?');
+    if (href.includes('#')) return false; // anchor links: hover only
+    if (pathname !== path) return false;
+    if (!query) return true;
+    const cat = new URLSearchParams(query).get('cat');
+    return !!cat && activeCat === cat;
+  };
+
+  const linkCls = (href: string) =>
+    `px-1 py-0.5 transition-colors ${
+      isActive(href)
+        ? 'text-[#276F27] font-bold border-b-2 border-[#276F27]'
+        : 'text-[#2A2016] hover:text-[#276F27]'
+    }`;
 
   return (
     <header className="sticky top-0 z-40 w-full shadow-sm font-sans">
-      {/* 1. Top Announcement Bar */}
-      <div className="bg-[#140E0A] text-[#FACC15] border-b border-[#EAB308]/20 py-2 px-4 text-center">
-        <p className="text-xs sm:text-sm tracking-wide flex items-center justify-center space-x-1.5 font-medium">
-          <span>Bring Java Origins Home</span>
-          <span className="text-white">•</span>
-          <span>Free Shipping Nationwide</span>
-        </p>
-      </div>
-
-      {/* 2. Main Navigation Bar */}
-      <div className="bg-[#FAFAF7] border-b border-[#E6E0D4] px-4 sm:px-8 lg:px-12 py-3.5">
+      {/* Main Navigation Bar */}
+      <div className="bg-white border-b border-[#CBE0B4] px-4 sm:px-8 lg:px-12 py-3.5">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           
           {/* Mobile Menu Trigger */}
           <div className="flex md:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-[#140E0A] p-1 hover:text-[#EAB308]"
+              className="text-[#140E0A] p-1 hover:text-[#276F27]"
               aria-label="Toggle Menu"
             >
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -45,29 +56,29 @@ export const Navbar = () => {
           </div>
 
           {/* Center Navigation Links (Desktop) */}
-          <nav className="hidden md:flex flex-wrap items-center justify-center space-x-3 lg:space-x-5 text-xs sm:text-sm font-semibold text-[#2A2016]">
-            <Link href="/" className="hover:text-[#9A3B26] transition-colors px-1 py-0.5">
+          <nav className="hidden md:flex flex-wrap items-center justify-center space-x-3 lg:space-x-5 text-xs sm:text-sm font-semibold">
+            <Link href="/" className={linkCls('/')}>
               Home
             </Link>
-            <Link href="/shop" className="hover:text-[#9A3B26] transition-colors px-1 py-0.5">
+            <Link href="/shop" className={linkCls('/shop')}>
               Shop All
             </Link>
-            <Link href="/shop?cat=Herbal+Drink" className="hover:text-[#9A3B26] transition-colors px-1 py-0.5">
+            <Link href="/shop?cat=Herbal+Drink" className={linkCls('/shop?cat=Herbal+Drink')}>
               Herbal Drinks
             </Link>
-            <Link href="/shop?cat=Food+%26+Snacks" className="hover:text-[#9A3B26] transition-colors px-1 py-0.5">
+            <Link href="/shop?cat=Food+%26+Snacks" className={linkCls('/shop?cat=Food+%26+Snacks')}>
               Food and Snacks
             </Link>
-            <Link href="/shop?cat=Herbal+Care" className="hover:text-[#9A3B26] transition-colors px-1 py-0.5">
+            <Link href="/shop?cat=Herbal+Care" className={linkCls('/shop?cat=Herbal+Care')}>
               Herbal Care
             </Link>
-            <Link href="/shop?cat=Fashion" className="hover:text-[#9A3B26] transition-colors px-1 py-0.5">
+            <Link href="/shop?cat=Fashion" className={linkCls('/shop?cat=Fashion')}>
               Fashion
             </Link>
-            <Link href="/#faq" className="hover:text-[#9A3B26] transition-colors px-1 py-0.5">
+            <Link href="/#faq" className={linkCls('/#faq')}>
               FAQs
             </Link>
-            <Link href="/#partner" className="hover:text-[#9A3B26] transition-colors px-1 py-0.5">
+            <Link href="/#partner" className={linkCls('/#partner')}>
               Contact Us
             </Link>
           </nav>
@@ -76,7 +87,7 @@ export const Navbar = () => {
           <div className="flex items-center space-x-3 sm:space-x-4 text-[#140E0A]">
             <Link
               href="/shop"
-              className="hover:text-[#9A3B26] transition-colors p-1"
+              className="hover:text-[#276F27] transition-colors p-1"
               title="Search Catalog"
             >
               <Search size={20} strokeWidth={2} />
@@ -86,10 +97,10 @@ export const Navbar = () => {
             {user ? (
               <Link
                 href="/profile"
-                className="flex items-center space-x-1.5 bg-[#FAF8F5] border border-[#D6CBB8] hover:border-[#9A3B26] text-[#140E0A] px-2.5 py-1 rounded-full text-xs font-bold transition-all shadow-xs"
+                className="flex items-center space-x-1.5 bg-[#F2F7E9] border border-[#C9D3BE] hover:border-[#276F27] text-[#140E0A] px-2.5 py-1 rounded-full text-xs font-bold transition-all shadow-xs"
                 title="My Account & Order History"
               >
-                <div className="w-5 h-5 rounded-full bg-[#D97706] text-white flex items-center justify-center text-[10px] font-bold">
+                <div className="w-5 h-5 rounded-full bg-[#276F27] text-white flex items-center justify-center text-[10px] font-bold">
                   {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                 </div>
                 <span className="hidden sm:inline line-clamp-1 max-w-[90px]">{user.name.split(' ')[0]}</span>
@@ -97,7 +108,7 @@ export const Navbar = () => {
             ) : (
               <Link
                 href="/login"
-                className="flex items-center space-x-1 text-xs font-bold text-[#140E0A] hover:text-[#9A3B26] px-2 py-1 transition-colors"
+                className="flex items-center space-x-1 text-xs font-bold text-[#140E0A] hover:text-[#276F27] px-2 py-1 transition-colors"
                 title="Login / Register"
               >
                 <User size={19} strokeWidth={2} />
@@ -107,12 +118,15 @@ export const Navbar = () => {
 
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative hover:text-[#9A3B26] transition-colors p-1"
+              className="relative hover:text-[#276F27] transition-colors p-1"
               aria-label="Shopping Bag"
             >
               <ShoppingBag size={21} strokeWidth={2} />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-[#EAB308] text-[#140E0A] text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center shadow-md animate-pulse">
+                <span
+                  key={totalItems}
+                  className="absolute -top-1 -right-1 bg-[#499A13] text-white text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center shadow-md animate-cart-bounce"
+                >
                   {totalItems}
                 </span>
               )}
@@ -124,11 +138,11 @@ export const Navbar = () => {
 
       {/* Mobile Menu Dropdown (Simple, Clean Minimalist with Categories Dropdown) */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b border-[#E6E0D4] px-6 py-5 space-y-3 text-sm text-[#2A2016] shadow-lg">
+        <div className="md:hidden bg-white border-b border-[#CBE0B4] px-6 py-5 space-y-3 text-sm text-[#2A2016] shadow-lg">
           <Link
             href="/"
             onClick={() => setMobileMenuOpen(false)}
-            className="block font-semibold hover:text-[#9A3B26] transition-colors py-1"
+            className="block font-semibold hover:text-[#276F27] transition-colors py-1"
           >
             Home
           </Link>
@@ -136,53 +150,53 @@ export const Navbar = () => {
           <Link
             href="/shop"
             onClick={() => setMobileMenuOpen(false)}
-            className="block font-semibold hover:text-[#9A3B26] transition-colors py-1"
+            className="block font-semibold hover:text-[#276F27] transition-colors py-1"
           >
             Shop All
           </Link>
 
           {/* Simple Clean Categories Dropdown */}
-          <div className="py-1 border-y border-[#F5EFE6]">
+          <div className="py-1 border-y border-[#EAF3DB]">
             <button
               type="button"
               onClick={() => setMobileCategoriesOpen(!mobileCategoriesOpen)}
-              className="w-full flex items-center justify-between font-semibold hover:text-[#9A3B26] transition-colors py-1 text-left"
+              className="w-full flex items-center justify-between font-semibold hover:text-[#276F27] transition-colors py-1 text-left"
             >
               <span>Categories</span>
               {mobileCategoriesOpen ? (
-                <ChevronUp size={16} className="text-[#786C60]" />
+                <ChevronUp size={16} className="text-[#5A7543]" />
               ) : (
-                <ChevronDown size={16} className="text-[#786C60]" />
+                <ChevronDown size={16} className="text-[#5A7543]" />
               )}
             </button>
 
             {mobileCategoriesOpen && (
-              <div className="mt-2 ml-3 pl-3 border-l border-[#E6E0D4] space-y-2 text-xs text-[#5A4D41]">
+              <div className="mt-2 ml-3 pl-3 border-l border-[#CBE0B4] space-y-2 text-xs text-[#5A4D41]">
                 <Link
                   href="/shop?cat=Herbal+Drink"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block py-1 hover:text-[#9A3B26] font-medium transition-colors"
+                  className="block py-1 hover:text-[#276F27] font-medium transition-colors"
                 >
                   Herbal Drinks
                 </Link>
                 <Link
                   href="/shop?cat=Food+%26+Snacks"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block py-1 hover:text-[#9A3B26] font-medium transition-colors"
+                  className="block py-1 hover:text-[#276F27] font-medium transition-colors"
                 >
                   Food and Snacks
                 </Link>
                 <Link
                   href="/shop?cat=Herbal+Care"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block py-1 hover:text-[#9A3B26] font-medium transition-colors"
+                  className="block py-1 hover:text-[#276F27] font-medium transition-colors"
                 >
                   Herbal Care
                 </Link>
                 <Link
                   href="/shop?cat=Fashion"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block py-1 hover:text-[#9A3B26] font-medium transition-colors"
+                  className="block py-1 hover:text-[#276F27] font-medium transition-colors"
                 >
                   Fashion
                 </Link>
@@ -193,7 +207,7 @@ export const Navbar = () => {
           <Link
             href="/#faq"
             onClick={() => setMobileMenuOpen(false)}
-            className="block font-semibold hover:text-[#9A3B26] transition-colors py-1"
+            className="block font-semibold hover:text-[#276F27] transition-colors py-1"
           >
             FAQs
           </Link>
@@ -201,17 +215,17 @@ export const Navbar = () => {
           <Link
             href="/#partner"
             onClick={() => setMobileMenuOpen(false)}
-            className="block font-semibold hover:text-[#9A3B26] transition-colors py-1"
+            className="block font-semibold hover:text-[#276F27] transition-colors py-1"
           >
             Contact Us
           </Link>
 
-          <div className="pt-2 border-t border-[#F5EFE6]">
+          <div className="pt-2 border-t border-[#EAF3DB]">
             {user ? (
               <Link
                 href="/profile"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block font-bold text-[#D97706] py-1"
+                className="block font-bold text-[#276F27] py-1"
               >
                 My Account ({user.name})
               </Link>
@@ -219,7 +233,7 @@ export const Navbar = () => {
               <Link
                 href="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block font-bold text-[#D97706] py-1"
+                className="block font-bold text-[#276F27] py-1"
               >
                 Login / Register
               </Link>

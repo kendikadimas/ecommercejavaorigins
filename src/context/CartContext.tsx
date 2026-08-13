@@ -18,6 +18,7 @@ interface CartContextType {
   setIsCartOpen: (open: boolean) => void;
   totalItems: number;
   subtotal: number;
+  lastAdded: { name: string; ts: number } | null;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -25,6 +26,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [lastAdded, setLastAdded] = useState<{ name: string; ts: number } | null>(null);
 
   // Load cart from localStorage on client mount
   useEffect(() => {
@@ -60,6 +62,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return [...prev, { product, quantity }];
     });
+    setLastAdded({ name: product.name, ts: Date.now() });
     setIsCartOpen(true);
   };
 
@@ -96,6 +99,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsCartOpen,
         totalItems,
         subtotal,
+        lastAdded,
       }}
     >
       {children}
