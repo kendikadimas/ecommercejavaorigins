@@ -783,7 +783,6 @@ export const store = {
 
   async getOrderById(id: string): Promise<OrderType | null> {
     const db = await getDb();
-    await this.releaseExpiredPendingOrders();
     const [rows] = await db.query<OrderRow[]>(
       ORDER_SELECT + ' WHERE o.id = ? OR o.order_number = ? LIMIT 1',
       [id, id]
