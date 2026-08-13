@@ -41,6 +41,8 @@ export interface OrderType {
   city: string;
   postalCode: string;
   totalAmount: number;
+  shippingMethod?: string;
+  shippingCost?: number;
   paymentMethodId?: string;
   paymentMethod?: PaymentMethodType;
   paymentProofUrl?: string;
@@ -112,6 +114,8 @@ interface OrderRow extends RowDataPacket {
   city: string;
   postalCode: string;
   totalAmount: string | number;
+  shippingMethod?: string;
+  shippingCost?: string | number;
   paymentMethodId?: string;
   paymentProofUrl?: string;
   status: OrderType['status'];
@@ -244,6 +248,8 @@ function mapOrder(r: OrderRow): OrderType {
     city: r.city,
     postalCode: r.postalCode,
     totalAmount: Number(r.totalAmount),
+    ...(r.shippingMethod && { shippingMethod: r.shippingMethod }),
+    ...(r.shippingCost !== undefined && { shippingCost: Number(r.shippingCost) }),
     ...(r.paymentMethodId && { paymentMethodId: r.paymentMethodId }),
     ...(paymentMethod && { paymentMethod }),
     ...(r.paymentProofUrl && { paymentProofUrl: r.paymentProofUrl }),
@@ -260,7 +266,8 @@ const ORDER_SELECT = `
 SELECT
   o.id, o.order_number AS orderNumber, o.customer_name AS customerName,
   o.customer_email AS customerEmail, o.customer_phone AS customerPhone,
-  o.address, o.city, o.postal_code AS postalCode, o.total_amount AS totalAmount,
+  o.address, o.city,   o.postal_code AS postalCode, o.total_amount AS totalAmount,
+  o.shipping_method AS shippingMethod, o.shipping_cost AS shippingCost,
   o.payment_method_id AS paymentMethodId, o.payment_proof_url AS paymentProofUrl,
   o.status, o.checkout_type AS checkoutType, o.notes,
   o.created_at AS createdAt, o.updated_at AS updatedAt,
@@ -800,6 +807,8 @@ export const store = {
     city: string;
     postalCode: string;
     totalAmount: number;
+    shippingMethod?: string;
+    shippingCost?: number;
     paymentMethodId?: string;
     checkoutType: 'WEB' | 'WHATSAPP';
     notes?: string;
@@ -836,8 +845,8 @@ export const store = {
       }
 
       await conn.query(
-        `INSERT INTO orders (id, order_number, customer_name, customer_email, customer_phone, address, city, postal_code, total_amount, payment_method_id, status, checkout_type, notes, created_at, updated_at)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        `INSERT INTO orders (id, order_number, customer_name, customer_email, customer_phone, address, city, postal_code, total_amount, shipping_method, shipping_cost, payment_method_id, status, checkout_type, notes, created_at, updated_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
         [
           orderId,
           orderNum,
@@ -848,6 +857,8 @@ export const store = {
           data.city,
           data.postalCode,
           data.totalAmount,
+          data.shippingMethod ?? '',
+          data.shippingCost ?? 0,
           data.paymentMethodId ?? null,
           'PENDING_PAYMENT',
           data.checkoutType,

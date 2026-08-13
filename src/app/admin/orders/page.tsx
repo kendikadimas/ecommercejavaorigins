@@ -405,6 +405,14 @@ export default function AdminOrdersPage() {
                       <span className="font-bold text-[#D97706]">{formatPrice(it.price * it.quantity)}</span>
                     </div>
                   ))}
+                  {selectedOrderDetails.shippingMethod && (
+                    <div className="pt-2 flex justify-between text-xs items-center">
+                      <span className="font-semibold">Shipping ({selectedOrderDetails.shippingMethod})</span>
+                      <span className="font-bold text-[#D97706]">
+                        {formatPrice(selectedOrderDetails.shippingCost ?? 0)}
+                      </span>
+                    </div>
+                  )}
                   <div className="pt-3 flex justify-between font-bold text-sm text-[#D97706] border-t border-gray-300">
                     <span>Total Bill:</span>
                     <span className="text-base">{formatPrice(selectedOrderDetails.totalAmount)}</span>

@@ -106,6 +106,10 @@ export async function POST(req: NextRequest) {
       address: String(body.address).trim(),
       city: String(body.city || '').trim(),
       postalCode: String(body.postalCode || '').trim(),
+      shippingMethod: Object.hasOwn(SHIPPING_OPTIONS, body.shippingMethod ?? '')
+        ? String(body.shippingMethod)
+        : 'PICKUP',
+      shippingCost: shipCost,
       paymentMethodId: body.paymentMethodId,
       checkoutType: body.checkoutType === 'WHATSAPP' ? 'WHATSAPP' : 'WEB',
       notes: body.notes ? String(body.notes).slice(0, 500) : undefined,

@@ -53,7 +53,6 @@ export default function OrderStatusPage() {
       if (!uploadRes.ok) throw new Error(uploadData.error || 'Failed to upload photo');
 
       const uploadedUrl = uploadData.url;
-      setProofUrl(uploadedUrl);
 
       const updateRes = await fetch('/api/orders', {
         method: 'PUT',
@@ -67,8 +66,11 @@ export default function OrderStatusPage() {
 
       const updatedOrder = await updateRes.json();
       if (updateRes.ok) {
+        setProofUrl(uploadedUrl);
         setOrder(updatedOrder);
         setMessage('Payment proof uploaded successfully! Order is awaiting Admin approval.');
+      } else {
+        setMessage(updatedOrder.error || 'Failed to save payment proof.');
       }
     } catch (err: any) {
       setMessage('Failed: ' + err.message);
@@ -79,7 +81,7 @@ export default function OrderStatusPage() {
 
   if (loading) {
     return (
-      <div className="bg-[#FAFAF7] min-h-screen py-20 text-center font-sans">
+      <div className="bg-white min-h-screen py-20 text-center font-sans">
         <p className="text-[#140E0A] text-base font-semibold">Loading Order Details...</p>
       </div>
     );
@@ -87,8 +89,8 @@ export default function OrderStatusPage() {
 
   if (!order) {
     return (
-      <div className="bg-[#FAFAF7] min-h-screen py-20 text-center font-sans">
-        <div className="max-w-md mx-auto p-8 bg-white rounded-2xl border border-[#E6E0D4] space-y-4 shadow-sm">
+      <div className="bg-white min-h-screen py-20 text-center font-sans">
+        <div className="max-w-md mx-auto p-8 bg-[#EEF6E0] rounded-2xl border border-[#B4D397] space-y-4 shadow-sm">
           <AlertCircle size={40} className="mx-auto text-amber-500" />
           <h2 className="text-2xl font-bold text-[#140E0A]">Order Not Found</h2>
           <p className="text-xs text-gray-500">Order number or ID is not valid.</p>
@@ -139,23 +141,23 @@ export default function OrderStatusPage() {
   };
 
   return (
-    <div className="bg-[#FAFAF7] min-h-screen py-10 text-[#140E0A] font-sans">
+    <div className="bg-white min-h-screen py-10 text-[#140E0A] font-sans">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
         <div className="flex items-center justify-between">
-          <Link href="/shop" className="text-xs text-[#786C60] hover:text-[#EAB308] font-semibold flex items-center">
+          <Link href="/shop" className="text-xs text-[#5A7543] hover:text-[#276F27] font-semibold flex items-center">
             <ArrowLeft size={16} className="mr-1" /> Back to Catalog
           </Link>
-          <span className="text-xs font-mono font-bold bg-white px-3 py-1 rounded-lg border border-[#E6E0D4]">
+          <span className="text-xs font-mono font-bold bg-white px-3 py-1 rounded-lg border border-[#CBE0B4]">
             ID: {order.orderNumber}
           </span>
         </div>
 
         {/* Top Status Header */}
-        <div className="bg-white p-6 sm:p-8 rounded-2xl border border-[#E6E0D4] shadow-sm space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#F5EFE6] pb-4">
+        <div className="bg-[#EEF6E0] p-6 sm:p-8 rounded-2xl border border-[#B4D397] shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#EAF3DB] pb-4">
             <div>
-              <p className="text-xs text-[#786C60] font-semibold uppercase tracking-wider">Order Status</p>
+              <p className="text-xs text-[#5A7543] font-semibold uppercase tracking-wider">Order Status</p>
               <h1 className="text-2xl font-extrabold text-[#140E0A] mt-1">
                 Order #{order.orderNumber}
               </h1>
@@ -179,30 +181,45 @@ export default function OrderStatusPage() {
               </span>
             </div>
           </div>
+
+          {order.shippingMethod && (
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-4 border-t border-[#E0E6D8] text-xs">
+              <div>
+                <span className="text-gray-400 block font-normal">Shipping Option:</span>
+                <span className="font-bold text-[#140E0A]">{order.shippingMethod}</span>
+              </div>
+              <div>
+                <span className="text-gray-400 block font-normal">Shipping Cost:</span>
+                <span className="font-bold text-[#140E0A]">
+                  {formatPrice(order.shippingCost ?? 0)}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Payment Instructions & Upload Bukti Pembayaran */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
           
           {/* Left Column: Bank / QRIS Details */}
-          <div className="md:col-span-6 bg-white p-6 rounded-2xl border border-[#E6E0D4] shadow-sm space-y-4">
-            <h3 className="text-lg font-bold border-b border-[#F5EFE6] pb-3 text-[#140E0A]">
+          <div className="md:col-span-6 bg-[#EEF6E0] p-6 rounded-2xl border border-[#B4D397] shadow-sm space-y-4">
+            <h3 className="text-lg font-bold border-b border-[#EAF3DB] pb-3 text-[#140E0A]">
               Transfer Payment Instructions
             </h3>
 
             {order.paymentMethod ? (
               <div className="space-y-3">
-                <div className="p-4 bg-[#FFFDF6] border border-[#EAB308]/30 rounded-xl space-y-2">
+                <div className="p-4 bg-[#FFFDF6] border border-[#499A13]/30 rounded-xl space-y-2">
                   <div className="flex items-center space-x-2 font-bold text-base text-[#140E0A]">
-                    <Building2 size={20} className="text-[#EAB308]" />
+                    <Building2 size={20} className="text-[#499A13]" />
                     <span>{order.paymentMethod.bankName}</span>
                   </div>
-                  <p className="text-xs text-[#786C60] font-normal">
+                  <p className="text-xs text-[#5A7543] font-normal">
                     Account Name: <span className="font-bold text-[#140E0A]">{order.paymentMethod.accountName}</span>
                   </p>
                   {order.paymentMethod.accountNumber && (
                     <>
-                      <p className="text-xs text-[#786C60] font-normal">
+                      <p className="text-xs text-[#5A7543] font-normal">
                         Account Number:
                       </p>
                       <p className="font-mono text-xl font-extrabold text-[#140E0A] tracking-wider select-all">
@@ -213,8 +230,8 @@ export default function OrderStatusPage() {
                 </div>
 
                 {order.paymentMethod.qrCodeUrl && (
-                  <div className="text-center p-4 bg-[#FAFAF7] rounded-xl border border-[#E6E0D4] space-y-2">
-                    <p className="text-xs font-bold text-[#3A2B20]">Scan QRIS to Pay</p>
+                  <div className="text-center p-4 bg-[#FAFAF7] rounded-xl border border-[#CBE0B4] space-y-2">
+                    <p className="text-xs font-bold text-[#22491F]">Scan QRIS to Pay</p>
                     <div className="relative w-48 h-48 mx-auto border rounded-lg overflow-hidden bg-white">
                       <Image src={order.paymentMethod.qrCodeUrl} alt="QRIS Code" fill className="object-contain" />
                     </div>
@@ -222,21 +239,21 @@ export default function OrderStatusPage() {
                 )}
 
                 {order.paymentMethod.instructions && (
-                  <div className="p-4 bg-[#F5EFE6] rounded-xl space-y-2 text-xs font-mono text-[#3A2B20]">
-                    <p className="text-[11px] font-sans font-bold text-[#786C60] uppercase tracking-wider">
+                  <div className="p-4 bg-[#EAF3DB] rounded-xl space-y-2 text-xs font-mono text-[#22491F]">
+                    <p className="text-[11px] font-sans font-bold text-[#5A7543] uppercase tracking-wider">
                       Reference Details for ASB Bank Transfer:
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      <div className="bg-white p-2.5 rounded-lg border border-[#E6E0D4] flex flex-col justify-between">
-                        <span className="text-[10px] font-bold text-[#8C3A2B] uppercase">PARTICULAR</span>
+                      <div className="bg-white p-2.5 rounded-lg border border-[#CBE0B4] flex flex-col justify-between">
+                        <span className="text-[10px] font-bold text-[#276F27] uppercase">PARTICULAR</span>
                         <span className="font-bold text-[#140E0A] text-xs sm:text-sm select-all mt-0.5">{order.customerName}</span>
                       </div>
-                      <div className="bg-white p-2.5 rounded-lg border border-[#E6E0D4] flex flex-col justify-between">
-                        <span className="text-[10px] font-bold text-[#8C3A2B] uppercase">CODE</span>
+                      <div className="bg-white p-2.5 rounded-lg border border-[#CBE0B4] flex flex-col justify-between">
+                        <span className="text-[10px] font-bold text-[#276F27] uppercase">CODE</span>
                         <span className="font-bold text-[#140E0A] text-xs sm:text-sm select-all mt-0.5">{formatPrice(order.totalAmount)}</span>
                       </div>
-                      <div className="bg-white p-2.5 rounded-lg border border-[#E6E0D4] flex flex-col justify-between">
-                        <span className="text-[10px] font-bold text-[#8C3A2B] uppercase">REF</span>
+                      <div className="bg-white p-2.5 rounded-lg border border-[#CBE0B4] flex flex-col justify-between">
+                        <span className="text-[10px] font-bold text-[#276F27] uppercase">REF</span>
                         <span className="font-bold text-[#140E0A] text-xs sm:text-sm select-all mt-0.5">{order.orderNumber}</span>
                       </div>
                     </div>
@@ -249,8 +266,8 @@ export default function OrderStatusPage() {
           </div>
 
           {/* Right Column: Upload Bukti Pembayaran */}
-          <div className="md:col-span-6 bg-white p-6 rounded-2xl border border-[#E6E0D4] shadow-sm space-y-4">
-            <h3 className="text-lg font-bold border-b border-[#F5EFE6] pb-3 text-[#140E0A]">
+          <div className="md:col-span-6 bg-[#EEF6E0] p-6 rounded-2xl border border-[#B4D397] shadow-sm space-y-4">
+            <h3 className="text-lg font-bold border-b border-[#EAF3DB] pb-3 text-[#140E0A]">
               Submit Payment Proof
             </h3>
 
@@ -263,12 +280,12 @@ export default function OrderStatusPage() {
 
             {proofUrl ? (
               <div className="space-y-3">
-                <p className="text-xs text-[#786C60] font-normal">Transfer Proof Uploaded:</p>
-                <div className="relative aspect-video rounded-xl overflow-hidden border border-[#E6E0D4] bg-[#FAFAF7]">
+                <p className="text-xs text-[#5A7543] font-normal">Transfer Proof Uploaded:</p>
+                <div className="relative aspect-video rounded-xl overflow-hidden border border-[#CBE0B4] bg-[#FAFAF7]">
                   <Image src={proofUrl} alt="Bukti Pembayaran" fill className="object-cover" />
                 </div>
                 <div className="text-center">
-                  <label className="inline-block text-xs font-semibold text-[#EAB308] cursor-pointer hover:underline">
+                  <label className="inline-block text-xs font-semibold text-[#499A13] cursor-pointer hover:underline">
                     Change Transfer Proof Photo
                     <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
                   </label>
@@ -276,12 +293,12 @@ export default function OrderStatusPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                <p className="text-xs text-[#786C60] font-normal">
+                <p className="text-xs text-[#5A7543] font-normal">
                   Please upload a photo/screenshot of your transfer receipt to verify this order.
                 </p>
 
-                <label className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-[#E6E0D4] hover:border-[#EAB308] rounded-2xl cursor-pointer bg-[#FAFAF7] hover:bg-[#FFFDF6] transition-colors">
-                  <Upload size={32} className="text-[#EAB308] mb-2" />
+                <label className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-[#CBE0B4] hover:border-[#499A13] rounded-2xl cursor-pointer bg-[#FAFAF7] hover:bg-[#FFFDF6] transition-colors">
+                  <Upload size={32} className="text-[#499A13] mb-2" />
                   <span className="text-sm font-bold text-[#140E0A]">Choose Receipt / Transfer Proof Photo</span>
                   <span className="text-[11px] text-gray-400 mt-1 font-normal">Format PNG, JPG, JPEG (Max 5MB)</span>
                   <input
@@ -301,7 +318,7 @@ export default function OrderStatusPage() {
               </div>
             )}
 
-            <div className="pt-2 text-xs text-gray-500 space-y-1.5 border-t border-[#F5EFE6] font-normal">
+            <div className="pt-2 text-xs text-gray-500 space-y-1.5 border-t border-[#EAF3DB] font-normal">
               <p>Our admin will check the transfer proof within 24 hours.</p>
               <p>Need quick confirmation? Contact Admin WhatsApp and attach your Order ID.</p>
             </div>
