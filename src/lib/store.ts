@@ -973,15 +973,24 @@ export const store = {
       }
 
       // REJECTED → any stock-holding status (WAITING_APPROVAL re-upload, or admin PAID/SHIPPED):
-      // re-reserve the stock that was released on reject
+      // re-reserve the stock that was released on reject. If any item can't be re-reserved
+      // (stock ran out while this order was rejected), abort the whole transition.
       const HOLDS_STOCK = ['PENDING_PAYMENT', 'WAITING_APPROVAL', 'PAID', 'SHIPPED'];
       if (existing.status === 'REJECTED' && HOLDS_STOCK.includes(status)) {
         for (const item of existing.items) {
           if (!item.productId) continue;
-          await conn.query(
+          const [res] = await conn.query<RowDataPacket[]>(
             'UPDATE products SET stock = stock - ?, updated_at = ? WHERE id = ? AND stock >= ?',
             [item.quantity, updatedAt, item.productId, item.quantity]
           );
+          if ((res as any).affectedRows === 0) {
+            const [p] = await conn.query<RowDataPacket[]>(
+              'SELECT name, stock FROM products WHERE id = ?',
+              [item.productId]
+            );
+            const pname = p.length ? (p[0].name as string) : item.productId;
+            throw new Error(`Stok ${pname} tidak cukup untuk memproses pesanan ini. Stok saat ini: ${p.length ? p[0].stock : 0}`);
+          }
         }
       }
 

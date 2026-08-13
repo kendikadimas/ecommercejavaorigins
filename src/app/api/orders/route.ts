@@ -174,7 +174,11 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Status pesanan telah berubah, silakan muat ulang' }, { status: 409 });
     }
     return NextResponse.json(updated);
-  } catch (error) {
+  } catch (error: any) {
+    const msg = error?.message || '';
+    if (msg.includes('Stok') && msg.includes('tidak cukup')) {
+      return NextResponse.json({ error: msg }, { status: 400 });
+    }
     return NextResponse.json({ error: 'Gagal memperbarui status pesanan' }, { status: 500 });
   }
 }
