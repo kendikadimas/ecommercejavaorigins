@@ -105,7 +105,10 @@ export async function POST(req: NextRequest) {
     if (body.shippingMethod !== undefined && !Object.hasOwn(SHIPPING_OPTIONS, body.shippingMethod)) {
       return NextResponse.json({ error: 'Invalid shipping method' }, { status: 400 });
     }
-    const shipCost = shippingCost(body.shippingMethod ?? 'PICKUP');
+    if (!Object.hasOwn(SHIPPING_OPTIONS, body.shippingMethod ?? '')) {
+      return NextResponse.json({ error: 'Shipping method is required' }, { status: 400 });
+    }
+    const shipCost = shippingCost(body.shippingMethod);
     const totalAmount =
       itemsWithServerPrice.reduce((sum, item) => sum + item.price * item.quantity, 0) + shipCost;
 
@@ -116,9 +119,7 @@ export async function POST(req: NextRequest) {
       address: String(body.address).trim(),
       city: String(body.city || '').trim(),
       postalCode: String(body.postalCode || '').trim(),
-      shippingMethod: Object.hasOwn(SHIPPING_OPTIONS, body.shippingMethod ?? '')
-        ? String(body.shippingMethod)
-        : 'PICKUP',
+      shippingMethod: String(body.shippingMethod),
       shippingCost: shipCost,
       paymentMethodId: body.paymentMethodId,
       checkoutType: body.checkoutType === 'WHATSAPP' ? 'WHATSAPP' : 'WEB',

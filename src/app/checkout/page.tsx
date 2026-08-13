@@ -25,7 +25,7 @@ export default function CheckoutPage() {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodType[]>(INITIAL_PAYMENT_METHODS);
   const [selectedMethodId, setSelectedMethodId] = useState<string>(INITIAL_PAYMENT_METHODS[0]?.id || '');
   const [checkoutFlow, setCheckoutFlow] = useState<'WEB' | 'WHATSAPP'>('WEB');
-  const [shippingId, setShippingId] = useState<string>('PICKUP');
+  const [shippingId, setShippingId] = useState<string>('');
 
   const shipCost = shippingCost(shippingId);
   const totalAmount = subtotal + shipCost;
@@ -110,6 +110,12 @@ export default function CheckoutPage() {
 
     if (!form.customerName || !form.customerPhone || !form.address) {
       setError('Please complete Name, Phone/WhatsApp Number, and Full Address.');
+      return;
+    }
+
+    if (!shippingId) {
+      setError('Please select a shipping option before continuing.');
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
       return;
     }
 
@@ -532,9 +538,9 @@ export default function CheckoutPage() {
                 <span className="font-bold text-[#140E0A]">{formatPrice(subtotal)}</span>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2" id="shipping-select">
                 <p className="text-xs font-bold text-[#5A7543] uppercase tracking-wider mb-2">
-                  Shipping Cost
+                  Shipping Cost <span className="text-red-500">*</span>
                 </p>
                 <div className="space-y-2">
                   {SHIPPING_OPTIONS.map((opt) => (
