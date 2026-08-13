@@ -103,19 +103,27 @@ export default function CheckoutPage() {
     e.preventDefault();
     setError('');
 
+    const scrollToError = () => {
+      setTimeout(() => {
+        document.getElementById('checkout-error')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+    };
+
     if (!user) {
       setError('You must register or log in to your account before placing an order.');
+      scrollToError();
       return;
     }
 
     if (!form.customerName || !form.customerPhone || !form.address) {
       setError('Please complete Name, Phone/WhatsApp Number, and Full Address.');
+      scrollToError();
       return;
     }
 
     if (!shippingId) {
       setError('Please select a shipping option before continuing.');
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      scrollToError();
       return;
     }
 
@@ -173,6 +181,9 @@ export default function CheckoutPage() {
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred while processing your order.');
+      setTimeout(() => {
+        document.getElementById('checkout-error')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
     } finally {
       setLoading(false);
     }
@@ -239,7 +250,7 @@ export default function CheckoutPage() {
         )}
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-300 text-red-800 rounded-xl text-xs font-bold flex items-center space-x-2">
+          <div id="checkout-error" className="mb-6 p-4 bg-red-50 border border-red-300 text-red-800 rounded-xl text-xs font-bold flex items-center space-x-2">
             <AlertCircle size={16} className="text-red-600 flex-shrink-0" />
             <span>{error}</span>
           </div>
