@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye, X, MessageSquare, CreditCard, CheckCircle2, Clock, Truck, XCircle } from 'lucide-react';
+import { Eye, X, MessageSquare, CreditCard, CheckCircle2, Clock, Truck, XCircle, Search } from 'lucide-react';
 import { OrderType } from '@/lib/store';
 import { formatPrice } from '@/lib/format';
 import { useAdminTheme } from '@/context/AdminThemeContext';
@@ -17,6 +17,7 @@ export default function AdminOrdersPage() {
   const [selectedProof, setSelectedProof] = useState<string | null>(null);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<OrderType | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
+  const [search, setSearch] = useState('');
 
   const fetchOrders = async () => {
     try {
@@ -57,8 +58,15 @@ export default function AdminOrdersPage() {
   };
 
   const filteredOrders = orders.filter((o) => {
-    if (filterStatus === 'ALL') return true;
-    return o.status === filterStatus;
+    if (filterStatus !== 'ALL' && o.status !== filterStatus) return false;
+    if (!search.trim()) return true;
+    const q = search.trim().toLowerCase();
+    return (
+      (o.orderNumber || '').toLowerCase().includes(q) ||
+      (o.customerName || '').toLowerCase().includes(q) ||
+      (o.customerEmail || '').toLowerCase().includes(q) ||
+      (o.customerPhone || '').toLowerCase().includes(q)
+    );
   });
 
   const getStatusBadge = (status: OrderType['status']) => {
@@ -145,6 +153,32 @@ export default function AdminOrdersPage() {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Search Bar */}
+      <div
+        className={`flex items-center gap-2 px-4 py-3 rounded-xl border ${
+          isLight ? 'bg-white border-[#E6DEC9]' : 'bg-[#231911] border-white/10'
+        }`}
+      >
+        <Search size={16} className={isLight ? 'text-[#B45309]' : 'text-[#FACC15]'} />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by order number, customer name, email, or phone..."
+          className="flex-1 bg-transparent text-sm focus:outline-none placeholder-gray-400 font-normal"
+        />
+        {search && (
+          <button
+            onClick={() => setSearch('')}
+            className={`text-xs font-bold px-2 py-1 rounded ${
+              isLight ? 'text-[#B45309] hover:bg-[#FAF6F0]' : 'text-[#FACC15] hover:bg-white/10'
+            }`}
+          >
+            Clear
+          </button>
+        )}
       </div>
 
       {/* Orders Table */}

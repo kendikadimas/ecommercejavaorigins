@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit3, Trash2, X, Upload, Building2, QrCode } from 'lucide-react';
+import { Plus, Edit3, Trash2, X, Upload, Building2, QrCode, Search } from 'lucide-react';
 import { PaymentMethodType } from '@/lib/seed-data';
 import { useAdminTheme } from '@/context/AdminThemeContext';
 
@@ -14,6 +14,18 @@ export default function AdminPaymentMethodsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMethod, setEditingMethod] = useState<PaymentMethodType | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const filteredMethods = methods.filter((m) => {
+    if (!search.trim()) return true;
+    const q = search.trim().toLowerCase();
+    return (
+      (m.name || '').toLowerCase().includes(q) ||
+      (m.bankName || '').toLowerCase().includes(q) ||
+      (m.accountName || '').toLowerCase().includes(q) ||
+      (m.accountNumber || '').toLowerCase().includes(q)
+    );
+  });
 
   const [formData, setFormData] = useState({
     name: 'Transfer Bank BCA',
@@ -160,9 +172,35 @@ export default function AdminPaymentMethodsPage() {
         </button>
       </div>
 
+      {/* Search */}
+      <div
+        className={`flex items-center gap-2 px-4 py-3 rounded-xl border ${
+          isLight ? 'bg-white border-[#E6DEC9]' : 'bg-[#231911] border-white/10'
+        }`}
+      >
+        <Search size={16} className={isLight ? 'text-[#B45309]' : 'text-[#FACC15]'} />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by method name, bank, account name, or number..."
+          className="flex-1 bg-transparent text-sm focus:outline-none placeholder-gray-400 font-normal"
+        />
+        {search && (
+          <button
+            onClick={() => setSearch('')}
+            className={`text-xs font-bold px-2 py-1 rounded ${
+              isLight ? 'text-[#B45309] hover:bg-[#FAF6F0]' : 'text-[#FACC15] hover:bg-white/10'
+            }`}
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
       {/* Methods Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {methods.map((m) => (
+        {filteredMethods.map((m) => (
           <div
             key={m.id}
             className={`border rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-4 ${
@@ -246,6 +284,14 @@ export default function AdminPaymentMethodsPage() {
           </div>
         ))}
       </div>
+
+      {filteredMethods.length === 0 && (
+        <div className={`text-center py-16 rounded-2xl border ${isLight ? 'bg-white border-[#E6DEC9]' : 'bg-[#231911] border-white/10'}`}>
+          <p className={`text-sm font-semibold ${isLight ? 'text-[#5C4D40]' : 'text-gray-300'}`}>
+            {search ? 'No payment methods match your search.' : 'No payment methods yet.'}
+          </p>
+        </div>
+      )}
 
       {/* Modal Form */}
       {isModalOpen && (

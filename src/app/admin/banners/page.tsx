@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit3, Trash2, X, Upload, ExternalLink, AlertCircle } from 'lucide-react';
+import { Plus, Edit3, Trash2, X, Upload, ExternalLink, AlertCircle, Search } from 'lucide-react';
 import { BannerType } from '@/lib/seed-data';
 import { useAdminTheme } from '@/context/AdminThemeContext';
 
@@ -16,6 +16,16 @@ export default function AdminBannersPage() {
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [search, setSearch] = useState('');
+
+  const filteredBanners = banners.filter((b) => {
+    if (!search.trim()) return true;
+    const q = search.trim().toLowerCase();
+    return (
+      (b.title || '').toLowerCase().includes(q) ||
+      (b.subtitle || '').toLowerCase().includes(q)
+    );
+  });
 
   const fetchBanners = async () => {
     try {
@@ -182,7 +192,7 @@ export default function AdminBannersPage() {
               isLight ? 'text-[#2C1D11]' : 'text-white'
             }`}
           >
-            Kelola Banner Homepage
+            Manage Homepage Banners
           </h1>
         </div>
         <button
@@ -190,13 +200,39 @@ export default function AdminBannersPage() {
           className="bg-[#D97706] hover:bg-[#B45309] text-white font-extrabold px-6 py-3 rounded-xl transition-colors flex items-center justify-center space-x-2 text-xs uppercase tracking-wider shadow-md"
         >
           <Plus size={18} />
-          <span>Tambah Banner Baru</span>
+          <span>Add New Banner</span>
         </button>
+      </div>
+
+      {/* Search */}
+      <div
+        className={`flex items-center gap-2 px-4 py-3 rounded-xl border ${
+          isLight ? 'bg-white border-[#E6DEC9]' : 'bg-[#231911] border-white/10'
+        }`}
+      >
+        <Search size={16} className={isLight ? 'text-[#B45309]' : 'text-[#FACC15]'} />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search banners by title or subtitle..."
+          className="flex-1 bg-transparent text-sm focus:outline-none placeholder-gray-400 font-normal"
+        />
+        {search && (
+          <button
+            onClick={() => setSearch('')}
+            className={`text-xs font-bold px-2 py-1 rounded ${
+              isLight ? 'text-[#B45309] hover:bg-[#FAF6F0]' : 'text-[#FACC15] hover:bg-white/10'
+            }`}
+          >
+            Clear
+          </button>
+        )}
       </div>
 
       {/* Banner Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {banners.map((b) => (
+        {filteredBanners.map((b) => (
           <div
             key={b.id}
             className={`border rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between ${
@@ -263,6 +299,14 @@ export default function AdminBannersPage() {
           </div>
         ))}
       </div>
+
+      {filteredBanners.length === 0 && (
+        <div className={`text-center py-16 rounded-2xl border ${isLight ? 'bg-white border-[#E6DEC9]' : 'bg-[#231911] border-white/10'}`}>
+          <p className={`text-sm font-semibold ${isLight ? 'text-[#5C4D40]' : 'text-gray-300'}`}>
+            {search ? 'No banners match your search.' : 'No banners yet.'}
+          </p>
+        </div>
+      )}
 
       {/* Modal CRUD Form */}
       {isModalOpen && (
