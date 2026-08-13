@@ -1,6 +1,7 @@
 import { getDb, toISO } from './db';
 import type { BannerType, PaymentMethodType, ProductType } from './seed-data';
 import type { RowDataPacket } from 'mysql2';
+import { sendMail } from './mailer';
 
 export interface UserType {
   id: string;
@@ -371,7 +372,7 @@ export const store = {
     return this.getUserById(id);
   },
 
-  // EMAIL NOTIFICATIONS
+  // EMAIL NOTIFICATIONS — sends via SMTP when configured, always logs to email_logs
   async sendEmailNotification(to: string, subject: string, body: string): Promise<EmailLogType> {
     const db = await getDb();
     const id = 'email-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
@@ -380,6 +381,17 @@ export const store = {
       'INSERT INTO email_logs (id, to_email, subject, body, created_at) VALUES (?,?,?,?,?)',
       [id, to, subject, body, createdAt]
     );
+    // best-effort real send; falls back silently to log-only when SMTP is unconfigured
+    try {
+      const escaped = body.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      await sendMail({
+        to,
+        subject,
+        html: `<div style="font-family:sans-serif;max-width:480px;margin:auto;line-height:1.6">${escaped.replace(/\n/g, '<br/>')}</div>`,
+      });
+    } catch {
+      // email log already saved — don't fail the business flow over a mail hiccup
+    }
     return { id, to, subject, body, createdAt };
   },
 
@@ -760,6 +772,18 @@ export const store = {
         ]);
         await conn.commit();
         released++;
+        // notify the customer (best-effort, outside the tx)
+        const [cust] = await conn.query<RowDataPacket[]>(
+          'SELECT customer_name, customer_email, order_number FROM orders WHERE id = ?',
+          [orderId]
+        );
+        if (cust.length && cust[0].customer_email) {
+          this.sendEmailNotification(
+            cust[0].customer_email as string,
+            `Pesanan #${cust[0].order_number} Dibatalkan - Java Origins`,
+            `Halo ${cust[0].customer_name}, pesanan #${cust[0].order_number} dibatalkan otomatis karena pembayaran tidak selesai dalam 24 jam. Stok telah dikembalikan. Silakan buat pesanan baru jika masih tertarik.`
+          ).catch(() => {});
+        }
       } catch (err) {
         await conn.rollback();
         throw err;
