@@ -79,7 +79,7 @@ function AdminLoginInner() {
               <input
                 type="text"
                 required
-                placeholder="nama@email.com"
+                placeholder="name@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 bg-[#140E0A] border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-[#FACC15]"

@@ -35,7 +35,7 @@ export default function CheckoutPage() {
     customerEmail: '',
     customerPhone: '',
     address: '',
-    city: 'Yogyakarta',
+    city: 'Auckland',
     postalCode: '',
     notes: '',
   });
@@ -52,7 +52,7 @@ export default function CheckoutPage() {
         customerEmail: user.email || prev.customerEmail,
         customerPhone: user.phone || prev.customerPhone,
         address: user.address || prev.address,
-        city: user.city || prev.city || 'Yogyakarta',
+        city: user.city || prev.city || 'Auckland',
         postalCode: user.postalCode || prev.postalCode,
       }));
     }
@@ -135,7 +135,7 @@ export default function CheckoutPage() {
       customerPhone: form.customerPhone,
       address: form.address,
       city: form.city,
-      postalCode: form.postalCode || '55000',
+      postalCode: form.postalCode || '1010',
       totalAmount: totalAmount,
       shippingMethod: shippingId,
       shippingCost: shipCost,
@@ -320,7 +320,7 @@ export default function CheckoutPage() {
                       type="text"
                       name="customerName"
                       required
-                      placeholder="Example: John Doe"
+                      placeholder="Example: John Smith"
                       value={form.customerName}
                       onChange={handleTextChange}
                       className="w-full px-4 py-2.5 rounded-xl border border-[#CBE0B4] bg-[#FAFAF7] text-sm focus:outline-none focus:border-[#499A13] font-normal"
@@ -333,7 +333,7 @@ export default function CheckoutPage() {
                       type="tel"
                       name="customerPhone"
                       required
-                      placeholder="+6281234567890"
+                      placeholder="+64 21 234 5678"
                       value={form.customerPhone}
                       onChange={handleTextChange}
                       className="w-full px-4 py-2.5 rounded-xl border border-[#CBE0B4] bg-[#FAFAF7] text-sm focus:outline-none focus:border-[#499A13] font-normal"
@@ -360,7 +360,7 @@ export default function CheckoutPage() {
                     name="address"
                     required
                     rows={3}
-                    placeholder="Street Name, House Number, District, City"
+                    placeholder="123 Queen St, Auckland CBD"
                     value={form.address}
                     onChange={handleTextChange}
                     className="w-full px-4 py-2.5 rounded-xl border border-[#CBE0B4] bg-[#FAFAF7] text-sm focus:outline-none focus:border-[#499A13] font-normal"
@@ -369,7 +369,7 @@ export default function CheckoutPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-[#22491F] mb-1">City / Regency</label>
+                    <label className="block text-xs font-semibold text-[#22491F] mb-1">City</label>
                     <input
                       type="text"
                       name="city"
@@ -379,11 +379,11 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#22491F] mb-1">Postal Code</label>
+                    <label className="block text-xs font-semibold text-[#22491F] mb-1">Postcode</label>
                     <input
                       type="text"
                       name="postalCode"
-                      placeholder="55281"
+                      placeholder="1010"
                       value={form.postalCode}
                       onChange={handleTextChange}
                       className="w-full px-4 py-2.5 rounded-xl border border-[#CBE0B4] bg-[#FAFAF7] text-sm focus:outline-none focus:border-[#499A13] font-normal"

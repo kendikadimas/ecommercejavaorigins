@@ -1,21 +1,29 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { ShoppingBag, Search, Menu, X, User, ChevronDown, ChevronUp } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { Logo } from '@/components/Logo';
 import { useCustomerAuth } from '@/context/CustomerAuthContext';
 
 export const Navbar = () => {
+  return (
+    <Suspense fallback={null}>
+      <NavbarInner />
+    </Suspense>
+  );
+};
+
+function NavbarInner() {
   const { totalItems, setIsCartOpen } = useCart();
   const { user } = useCustomerAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileCategoriesOpen, setMobileCategoriesOpen] = useState(false);
   const pathname = usePathname();
-  const activeCat =
-    typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('cat') || '' : '';
+  const searchParams = useSearchParams();
+  const activeCat = searchParams.get('cat') || '';
 
   const isActive = (href: string) => {
     const [path, query] = href.split('?');

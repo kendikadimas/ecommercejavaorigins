@@ -130,7 +130,7 @@ function CustomerRegisterInner() {
                 type="text"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="081234567890"
+                placeholder="+64 21 234 5678"
                 className="w-full pl-10 pr-4 py-2.5 bg-[#F2F7E9] border border-[#C9D3BE] rounded-xl text-sm text-[#26421F] focus:outline-none focus:border-[#276F27] font-normal"
               />
               <Phone size={18} className="absolute left-3 top-3 text-gray-400" />
@@ -144,7 +144,7 @@ function CustomerRegisterInner() {
                 type="text"
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                placeholder="123 Main St, District"
+                placeholder="123 Queen St, Auckland"
                 className="w-full pl-10 pr-4 py-2.5 bg-[#F2F7E9] border border-[#C9D3BE] rounded-xl text-sm text-[#26421F] focus:outline-none focus:border-[#276F27] font-normal"
               />
               <MapPin size={18} className="absolute left-3 top-3 text-gray-400" />
@@ -158,18 +158,18 @@ function CustomerRegisterInner() {
                 type="text"
                 value={formData.city}
                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                placeholder="Yogyakarta"
+                placeholder="Auckland"
                 className="w-full px-4 py-2.5 bg-[#F2F7E9] border border-[#C9D3BE] rounded-xl text-sm text-[#26421F] focus:outline-none focus:border-[#276F27] font-normal"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#44663A] mb-1">Postal Code</label>
+              <label className="block text-xs font-semibold text-[#44663A] mb-1">Postcode</label>
               <input
                 type="text"
                 value={formData.postalCode}
                 onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                placeholder="55271"
+                placeholder="1010"
                 className="w-full px-4 py-2.5 bg-[#F2F7E9] border border-[#C9D3BE] rounded-xl text-sm text-[#26421F] focus:outline-none focus:border-[#276F27] font-normal"
               />
             </div>

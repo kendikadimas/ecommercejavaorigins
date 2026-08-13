@@ -372,7 +372,7 @@ export default function CustomerProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#44663A] mb-1">Postal Code</label>
+                  <label className="block text-xs font-semibold text-[#44663A] mb-1">Postcode</label>
                   <input
                     type="text"
                     value={profileForm.postalCode}

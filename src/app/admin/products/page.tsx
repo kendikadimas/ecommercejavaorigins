@@ -683,7 +683,7 @@ export default function AdminProductsPage() {
                     className={`flex-1 px-4 py-2.5 border rounded-xl text-sm focus:outline-none font-normal ${
                       isLight ? 'bg-[#FAF8F5] border-[#D6CBB8] text-[#2C1D11]' : 'bg-[#140E0A] border-white/10 text-white'
                     }`}
-                    placeholder="https://... atau /uploads/..."
+                    placeholder="https://... or /uploads/..."
                   />
                   <label className="px-4 py-2.5 bg-[#D97706] hover:bg-[#B45309] text-white rounded-xl text-xs font-extrabold cursor-pointer transition-colors flex items-center space-x-1">
                     <Upload size={14} />
