@@ -5,13 +5,16 @@ import { googleAuthUrl } from '@/lib/google-auth';
 export const dynamic = 'force-dynamic';
 
 // Step 1: send the browser to Google's consent screen.
-// A random `state` guards against CSRF on the callback (verified in the callback).
+// The `state` carries the intended post-login destination (encoded) so the callback
+// doesn't depend on cookies surviving the cross-domain round-trip.
 export async function GET(req: NextRequest) {
   try {
-    const state = randomBytes(24).toString('hex');
+    const random = randomBytes(18).toString('hex');
     const redirectParam = req.nextUrl.searchParams.get('redirect') || '/profile';
+    const state = `${random}.${Buffer.from(redirectParam).toString('base64url')}`;
     const url = googleAuthUrl(state);
     const res = NextResponse.redirect(url);
+    // keep a cookie copy too (belt & suspenders; not strictly needed anymore)
     res.cookies.set('google_oauth_state', state, {
       httpOnly: true,
       sameSite: 'lax',
@@ -19,7 +22,6 @@ export async function GET(req: NextRequest) {
       path: '/',
       maxAge: 60 * 10, // 10 min
     });
-    // carry the intended post-login destination in a cookie (callback reads it)
     res.cookies.set('google_oauth_redirect', redirectParam, {
       httpOnly: true,
       sameSite: 'lax',
@@ -29,6 +31,6 @@ export async function GET(req: NextRequest) {
     });
     return res;
   } catch {
-    return NextResponse.json({ error: 'Konfigurasi Google tidak lengkap' }, { status: 500 });
+    return NextResponse.json({ error: 'Google configuration is incomplete' }, { status: 500 });
   }
 }

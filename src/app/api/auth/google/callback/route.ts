@@ -6,6 +6,7 @@ import { safeRedirect } from '@/lib/redirect';
 export const dynamic = 'force-dynamic';
 
 // Step 2: Google redirects back here with ?code=...&state=...
+// `state` is "<random>.<base64url(redirect)>" — the destination is recovered from it.
 export async function GET(req: NextRequest) {
   const url = req.nextUrl;
   const code = url.searchParams.get('code');
@@ -21,7 +22,18 @@ export async function GET(req: NextRequest) {
     const user = await createOrLoginGoogleUser(info);
 
     const session = { id: user.id, email: user.email, name: user.name };
-    const redirect = safeRedirect(req.cookies.get('google_oauth_redirect')?.value || '/profile', '/profile');
+
+    // recover redirect from state, falling back to the cookie, then default
+    let redirect: string;
+    try {
+      const [random, encoded] = state.split('.');
+      if (random && encoded) redirect = Buffer.from(encoded, 'base64url').toString('utf8');
+      else redirect = '';
+    } catch {
+      redirect = '';
+    }
+    if (!redirect) redirect = req.cookies.get('google_oauth_redirect')?.value || '/profile';
+    redirect = safeRedirect(redirect, '/profile');
 
     const res = NextResponse.redirect(new URL(redirect, req.url));
     res.cookies.set('java_user_session', signPayload(session), {
