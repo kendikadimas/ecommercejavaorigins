@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
+import { CornerLeaf } from '@/components/CornerLeaf';
 
 const INGREDIENTS = [
   {
@@ -44,18 +45,30 @@ const INGREDIENTS = [
 
 export const IngredientsSection = () => {
   return (
-    <section id="ingredients" className="py-20 bg-[#1A120C] text-white relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="ingredients" className="py-20 bg-[#276F27] text-white relative overflow-hidden">
+      <CornerLeaf
+        src="/elements/leaf-monstera-palm-cluster-fan-upward.png.png"
+        className="absolute bottom-0 left-0 right-20"
+        size={400}
+        opacity={0.35}
+      />
+      <CornerLeaf
+        src="/elements/leaf-monstera-palm-cluster-fan-upward.png.png"
+        className="absolute top-0 right-0"
+        size={400}
+        opacity={0.3}
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Header */}
         <div className="text-left mb-12">
-          <span className="inline-block bg-[#FACC15] text-[#140E0A] font-bold text-[11px] uppercase tracking-widest px-3 py-1 rounded">
+          <span className="inline-block bg-[#499A13] text-white font-bold text-[11px] uppercase tracking-widest px-3 py-1 rounded">
             THE ESSENCE
           </span>
           <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-white mt-3">
-            Ingredients <span className="text-[#FACC15]">Java Drink</span>
+            Ingredients <span className="text-[#A8E06A]">Java Drink</span>
           </h2>
-          <p className="text-gray-300 text-sm sm:text-base mt-2 max-w-xl">
+          <p className="text-green-100 text-sm sm:text-base mt-2 max-w-xl">
             Some of the natural, functional ingredients inside every bottle of Java Drink, sourced directly from Javanese herbal artisans.
           </p>
         </div>
@@ -65,9 +78,9 @@ export const IngredientsSection = () => {
           {INGREDIENTS.map((item, idx) => (
             <div
               key={idx}
-              className="bg-[#231911] border border-white/10 rounded-2xl p-4 flex flex-col items-center text-center hover:border-[#FACC15] transition-all transform hover:-translate-y-1 shadow-lg group"
+              className="bg-[#F7FBEF] border border-[#CBE0B4] rounded-2xl p-4 flex flex-col items-center text-center hover:border-[#499A13] transition-all transform hover:-translate-y-1 shadow-lg group"
             >
-              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden mb-3 bg-[#140E0A] border border-white/10">
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden mb-3 bg-[#EAF3DB] border border-[#CBE0B4]">
                 <Image
                   src={item.image}
                   alt={item.name}
@@ -75,13 +88,13 @@ export const IngredientsSection = () => {
                   className="object-cover group-hover:scale-110 transition-transform duration-500"
                 />
               </div>
-              <h3 className="font-serif text-base font-bold text-white group-hover:text-[#FACC15] transition-colors">
+              <h3 className="font-serif text-base font-bold text-[#276F27] group-hover:text-[#499A13] transition-colors">
                 {item.name}
               </h3>
-              <span className="bg-[#FACC15] text-[#140E0A] font-bold text-[10px] uppercase px-2 py-0.5 rounded mt-1">
+              <span className="bg-[#276F27] text-white font-bold text-[10px] uppercase px-2 py-0.5 rounded mt-1">
                 {item.sub}
               </span>
-              <p className="text-xs text-gray-400 mt-2 line-clamp-3 leading-relaxed">
+              <p className="text-xs text-[#5A7543] mt-2 line-clamp-3 leading-relaxed">
                 {item.desc}
               </p>
             </div>

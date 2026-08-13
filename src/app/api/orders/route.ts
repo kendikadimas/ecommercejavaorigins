@@ -63,6 +63,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // M-7: logged-in users must order under their own email — never another person's
+    const sessionUser = getUserSession(req);
+    const customerEmail = String(body.customerEmail || '').trim().toLowerCase();
+    if (sessionUser && sessionUser.email.toLowerCase() !== customerEmail) {
+      return NextResponse.json(
+        { error: 'Email pesanan harus sama dengan email akun Anda' },
+        { status: 400 }
+      );
+    }
+
     // Recalculate prices + stock server-side (M-02)
     const itemsWithServerPrice = await Promise.all(
       body.items.map(async (item: { productId: string; quantity: number }) => {
@@ -101,7 +111,7 @@ export async function POST(req: NextRequest) {
 
     const created = await store.createOrder({
       customerName: String(body.customerName).trim(),
-      customerEmail: String(body.customerEmail || '').trim(),
+      customerEmail: customerEmail,
       customerPhone: String(body.customerPhone).trim(),
       address: String(body.address).trim(),
       city: String(body.city || '').trim(),
@@ -140,6 +150,24 @@ export async function PUT(req: NextRequest) {
     if (ADMIN_STATUSES.includes(status)) {
       if (!getAdminSession(req)) {
         return NextResponse.json({ error: 'Akses ditolak' }, { status: 403 });
+      }
+      // Enforce a sane forward-only flow: never reject a shipped order, and don't
+      // approve/ship before a payment proof was submitted.
+      const order = await store.getOrderById(id);
+      if (!order) {
+        return NextResponse.json({ error: 'Pesanan tidak ditemukan' }, { status: 404 });
+      }
+      const from = order.status;
+      const validFrom: Record<string, string[]> = {
+        PAID: ['WAITING_APPROVAL'],
+        SHIPPED: ['PAID'],
+        REJECTED: ['PENDING_PAYMENT', 'WAITING_APPROVAL', 'PAID'],
+      };
+      if (!validFrom[status]?.includes(from)) {
+        return NextResponse.json(
+          { error: `Transisi ${from} → ${status} tidak diizinkan` },
+          { status: 400 }
+        );
       }
     } else if (status === 'WAITING_APPROVAL') {
       // Customer/guest: submit proof from PENDING_PAYMENT, re-upload while WAITING, or re-submit after REJECTED

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getAdminSession } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {
-  const authCookie = req.cookies.get('java_admin_auth');
-  if (authCookie && authCookie.value === 'authenticated') {
+  const session = getAdminSession(req);
+  if (session) {
     return NextResponse.json({ authenticated: true });
   }
   return NextResponse.json({ authenticated: false }, { status: 401 });

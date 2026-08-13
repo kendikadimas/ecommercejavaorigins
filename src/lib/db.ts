@@ -199,21 +199,27 @@ export async function getDb(): Promise<mysql.Pool> {
       for (const stmt of SCHEMA.split(';').map((s) => s.trim()).filter(Boolean)) {
         await conn.query(stmt);
       }
-      // M5: guarded migrations for tables created before newer columns existed
+      // M5: guarded migrations for tables created before newer columns existed.
+      // Only swallow "duplicate column/index" errors (MySQL 1060/1061); anything
+      // else (connection failure etc.) must propagate so it isn't silently masked.
+      const migrationGuard = (err: unknown): void => {
+        const code = (err as { code?: string })?.code ?? '';
+        if (!['ER_DUP_FIELDNAME', 'ER_DUP_KEYNAME'].includes(code)) throw err;
+      };
       try {
         await conn.query("ALTER TABLE orders ADD COLUMN shipping_method VARCHAR(16) DEFAULT ''");
-      } catch {
-        /* column already exists */
+      } catch (e) {
+        migrationGuard(e);
       }
       try {
         await conn.query('ALTER TABLE orders ADD COLUMN shipping_cost DECIMAL(10,2) NOT NULL DEFAULT 0');
-      } catch {
-        /* column already exists */
+      } catch (e) {
+        migrationGuard(e);
       }
       try {
         await conn.query('ALTER TABLE orders ADD UNIQUE INDEX uniq_orders_number (order_number)');
-      } catch {
-        /* index already exists (or duplicate rows) */
+      } catch (e) {
+        migrationGuard(e);
       }
       await seedIfEmpty(conn);
     } finally {

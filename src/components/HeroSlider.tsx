@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
-import { BannerType, INITIAL_BANNERS } from '@/lib/store';
+import { BannerType, INITIAL_BANNERS } from '@/lib/seed-data';
 
 export const HeroSlider = () => {
   const [banners, setBanners] = useState<BannerType[]>(INITIAL_BANNERS);
@@ -88,7 +88,7 @@ export const HeroSlider = () => {
 
   return (
     <section
-      className="relative w-full bg-[#140E0A] overflow-hidden border-b border-[#EAB308]/20 select-none cursor-grab active:cursor-grabbing"
+      className="relative w-full bg-white overflow-hidden border-b border-[#CBE0B4] select-none cursor-grab active:cursor-grabbing"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -112,21 +112,15 @@ export const HeroSlider = () => {
           }}
         />
 
-        {/* Dark Vignette Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#140E0A] via-[#140E0A]/40 to-transparent opacity-85 pointer-events-none" />
-        <div className="absolute inset-0 bg-black/20 pointer-events-none" />
-
         {/* Hero Overlay Text */}
         <div className="absolute inset-0 flex items-center justify-center text-center p-6 sm:p-12 pointer-events-none">
           <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 text-white pointer-events-auto">
             
-            <span className="inline-block bg-[#FACC15] text-[#140E0A] font-extrabold text-[11px] sm:text-xs uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg">
-              JAVA ORIGINS HERBAL BEVERAGE
-            </span>
-
-            <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight uppercase drop-shadow-md">
-              {currentBanner.title}
-            </h1>
+            {currentBanner.title && (
+              <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight uppercase drop-shadow-md">
+                {currentBanner.title}
+              </h1>
+            )}
 
             {currentBanner.subtitle && (
               <p className="text-sm sm:text-lg text-gray-200 font-light max-w-2xl mx-auto leading-relaxed drop-shadow">

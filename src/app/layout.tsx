@@ -16,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-[#FAFAF7] text-[#140E0A] antialiased">
+      <body className="bg-white text-[#140E0A] antialiased">
         <CartProvider>
           <AppShell>{children}</AppShell>
         </CartProvider>

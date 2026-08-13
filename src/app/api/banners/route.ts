@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { store } from '@/lib/store';
+import { getAdminSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,9 +8,7 @@ export async function GET() {
   try {
     const banners = await store.getBanners();
     return NextResponse.json(banners, {
-      headers: {
-        'Cache-Control': 'no-store, max-age=0',
-      },
+      headers: { 'Cache-Control': 'no-store, max-age=0' },
     });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch banners' }, { status: 500 });
@@ -17,18 +16,23 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  if (!getAdminSession(req)) {
+    return NextResponse.json({ error: 'Akses ditolak' }, { status: 403 });
+  }
   try {
     const body = await req.json();
-    if (!body.title || !body.imageUrl) {
-      return NextResponse.json({ error: 'Title and image URL are required' }, { status: 400 });
+    if (!body.imageUrl) {
+      return NextResponse.json({ error: 'Foto banner wajib diunggah' }, { status: 400 });
     }
     const created = await store.createBanner({
-      title: body.title,
+      title: body.title || '',
       subtitle: body.subtitle || '',
       imageUrl: body.imageUrl,
       linkUrl: body.linkUrl || '/shop',
       active: body.active ?? true,
-      sortOrder: body.sortOrder ? Number(body.sortOrder) : 1,
+      sortOrder: body.sortOrder !== undefined && body.sortOrder !== null && body.sortOrder !== ''
+        ? Number(body.sortOrder)
+        : 1,
     });
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
@@ -37,6 +41,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  if (!getAdminSession(req)) {
+    return NextResponse.json({ error: 'Akses ditolak' }, { status: 403 });
+  }
   try {
     const body = await req.json();
     const { id, ...data } = body;
@@ -51,6 +58,9 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  if (!getAdminSession(req)) {
+    return NextResponse.json({ error: 'Akses ditolak' }, { status: 403 });
+  }
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');

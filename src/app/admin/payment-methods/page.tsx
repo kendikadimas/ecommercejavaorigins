@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit3, Trash2, X, Upload, Building2, QrCode } from 'lucide-react';
-import { PaymentMethodType } from '@/lib/store';
+import { PaymentMethodType } from '@/lib/seed-data';
 import { useAdminTheme } from '@/context/AdminThemeContext';
 
 export default function AdminPaymentMethodsPage() {

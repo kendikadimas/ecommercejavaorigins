@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { store } from '@/lib/store';
+import { getAdminSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +27,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  if (!getAdminSession(req)) {
+    return NextResponse.json({ error: 'Akses ditolak' }, { status: 403 });
+  }
   try {
     const body = await req.json();
     if (!body.name || !body.price || !body.image) {
@@ -39,6 +43,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  if (!getAdminSession(req)) {
+    return NextResponse.json({ error: 'Akses ditolak' }, { status: 403 });
+  }
   try {
     const body = await req.json();
     const { id, ...data } = body;
@@ -53,6 +60,9 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  if (!getAdminSession(req)) {
+    return NextResponse.json({ error: 'Akses ditolak' }, { status: 403 });
+  }
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');

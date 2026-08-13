@@ -50,4 +50,6 @@ export const LIMITS = {
   UPLOAD: { limit: 20, windowMs: 15 * 60 * 1000 },
   // 5 password reset requests per 15 min per IP (existing behavior, kept)
   FORGOT: { limit: 5, windowMs: 15 * 60 * 1000 },
+  // 10 review submissions per 15 min per IP
+  REVIEW: { limit: 10, windowMs: 15 * 60 * 1000 },
 } as const;

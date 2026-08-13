@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit3, Trash2, X, Upload, ExternalLink, AlertCircle } from 'lucide-react';
-import { BannerType } from '@/lib/store';
+import { BannerType } from '@/lib/seed-data';
 import { useAdminTheme } from '@/context/AdminThemeContext';
 
 export default function AdminBannersPage() {
@@ -97,8 +97,8 @@ export default function AdminBannersPage() {
     e.preventDefault();
     setErrorMsg('');
 
-    if (!formData.title || !formData.imageUrl) {
-      setErrorMsg('Judul Banner dan Foto Banner wajib diisi.');
+    if (!formData.imageUrl) {
+      setErrorMsg('Foto Banner wajib diisi.');
       return;
     }
 

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Eye, X, MessageSquare, CreditCard, CheckCircle2, Clock, Truck, XCircle } from 'lucide-react';
 import { OrderType } from '@/lib/store';
 import { formatPrice } from '@/lib/format';
@@ -9,6 +10,7 @@ import { useAdminTheme } from '@/context/AdminThemeContext';
 export default function AdminOrdersPage() {
   const { theme } = useAdminTheme();
   const isLight = theme === 'light';
+  const router = useRouter();
 
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,6 +21,10 @@ export default function AdminOrdersPage() {
   const fetchOrders = async () => {
     try {
       const res = await fetch(`/api/orders?t=${Date.now()}`);
+      if (res.status === 401) {
+        router.replace('/admin/login');
+        return;
+      }
       const data = await res.json();
       if (Array.isArray(data)) setOrders(data);
     } catch {

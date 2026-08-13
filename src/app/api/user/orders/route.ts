@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { store } from '@/lib/store';
+import { getUserSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-    const sessionCookie = req.cookies.get('java_user_session')?.value;
-    if (!sessionCookie) {
+    const user = getUserSession(req);
+    if (!user) {
       return NextResponse.json({ error: 'Tidak terautentikasi' }, { status: 401 });
     }
-    const user = JSON.parse(sessionCookie);
     const orders = await store.getOrdersByCustomerEmail(user.email);
     const emailLogs = await store.getEmailLogs(user.email);
 

@@ -45,12 +45,13 @@ export async function POST(req: NextRequest) {
     await store.updateUserPassword(user.id, hashedPassword);
     await store.markPasswordResetUsed(tokenHash);
 
+    const escName = user.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     await sendMail({
       to: user.email,
       subject: 'Password Berhasil Diubah - Java Origins',
       html: `<div style="font-family:sans-serif;max-width:480px;margin:auto">
         <h2>Password Diubah</h2>
-        <p>Halo ${user.name},</p>
+        <p>Halo ${escName},</p>
         <p>Password akun Java Origins Anda telah berhasil diubah. Jika ini bukan Anda, segera hubungi admin.</p>
       </div>`,
     });

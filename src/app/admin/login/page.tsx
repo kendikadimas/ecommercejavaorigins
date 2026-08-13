@@ -4,10 +4,11 @@ import React, { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Lock, Mail, ArrowRight, AlertCircle, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { Logo } from '@/components/Logo';
+import { safeRedirect } from '@/lib/redirect';
 
 function AdminLoginInner() {
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/admin/products';
+  const redirectTo = safeRedirect(searchParams.get('redirect'), '/admin/products');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,12 +34,11 @@ function AdminLoginInner() {
         throw new Error(data.error || 'Login failed. Check your username and password.');
       }
 
+      // cookie is set httpOnly by the server — no manual document.cookie needed
       localStorage.setItem('java_admin_logged_in', 'true');
-      document.cookie = 'java_admin_auth=authenticated; path=/; max-age=86400';
-
       window.location.href = redirectTo;
     } catch (err: any) {
-      setError(err.message || 'Login failed. Use admin@javaorigins.com and admin123');
+      setError(err.message || 'Login failed. Check your username and password.');
     } finally {
       setLoading(false);
     }

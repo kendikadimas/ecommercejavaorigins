@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit3, Trash2, X, Upload, Tags, Search, Filter } from 'lucide-react';
-import { ProductType } from '@/lib/store';
+import { ProductType } from '@/lib/seed-data';
 import { formatPrice } from '@/lib/format';
 import { useAdminTheme } from '@/context/AdminThemeContext';
 

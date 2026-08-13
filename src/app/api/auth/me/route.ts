@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { store } from '@/lib/store';
+import { getUserSession, COOKIE_CONFIG, signPayload } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-    const sessionCookie = req.cookies.get('java_user_session')?.value;
-    if (!sessionCookie) {
+    const session = getUserSession(req);
+    if (!session) {
       return NextResponse.json({ authenticated: false, user: null }, { status: 401 });
     }
-    const cookieUser = JSON.parse(sessionCookie);
-    const user = await store.getUserById(cookieUser.id);
+    const user = await store.getUserById(session.id);
     if (!user) {
       return NextResponse.json({ authenticated: false, user: null }, { status: 401 });
     }
@@ -23,16 +23,16 @@ export async function GET(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const sessionCookie = req.cookies.get('java_user_session')?.value;
-    if (!sessionCookie) {
+    const session = getUserSession(req);
+    if (!session) {
       return NextResponse.json({ error: 'Tidak terautentikasi.' }, { status: 401 });
     }
-    const cookieUser = JSON.parse(sessionCookie);
 
     const body = await req.json();
+    // whitelist only safe fields — prevent mass assignment (M-01)
     const { name, phone, address, city, postalCode } = body;
 
-    const updated = await store.updateUser(cookieUser.id, {
+    const updated = await store.updateUser(session.id, {
       ...(name && { name }),
       ...(phone !== undefined && { phone }),
       ...(address !== undefined && { address }),
@@ -45,10 +45,10 @@ export async function PUT(req: NextRequest) {
     }
 
     const { password: _, ...safeUser } = updated;
+    const payload = { id: safeUser.id, email: safeUser.email, name: safeUser.name };
     const response = NextResponse.json({ success: true, user: safeUser });
-    response.cookies.set('java_user_session', JSON.stringify(safeUser), {
-      httpOnly: false,
-      path: '/',
+    response.cookies.set('java_user_session', signPayload(payload), {
+      ...COOKIE_CONFIG,
       maxAge: 60 * 60 * 24 * 7,
     });
 

@@ -12,46 +12,31 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { theme, toggleTheme } = useAdminTheme();
 
-  // Synchronous initial authentication check
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const localAuth = localStorage.getItem('java_admin_logged_in');
-      const hasCookie = document.cookie.includes('java_admin_auth=authenticated');
-      return localAuth === 'true' || hasCookie;
-    }
-    return true;
-  });
+  // ponytail: localStorage as fast-path to avoid flicker; /api/admin/check is the real source of truth
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const localAuth = localStorage.getItem('java_admin_logged_in');
-      const hasCookie = document.cookie.includes('java_admin_auth=authenticated');
-
-      if (localAuth === 'true' || hasCookie) {
-        setIsAuthenticated(true);
-      } else {
-        fetch('/api/admin/check')
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.authenticated) {
-              localStorage.setItem('java_admin_logged_in', 'true');
-              setIsAuthenticated(true);
-            } else {
-              setIsAuthenticated(false);
-            }
-          })
-          .catch(() => {
-            setIsAuthenticated(false);
-          });
-      }
-    }
+    fetch('/api/admin/check')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authenticated) {
+          localStorage.setItem('java_admin_logged_in', 'true');
+          setIsAuthenticated(true);
+        } else {
+          localStorage.removeItem('java_admin_logged_in');
+          setIsAuthenticated(false);
+        }
+      })
+      .catch(() => {
+        localStorage.removeItem('java_admin_logged_in');
+        setIsAuthenticated(false);
+      });
   }, []);
 
   const handleLogout = async () => {
     localStorage.removeItem('java_admin_logged_in');
-    document.cookie = 'java_admin_auth=; path=/; max-age=0';
     await fetch('/api/admin/logout', { method: 'POST' });
     setIsAuthenticated(false);
     window.location.href = '/admin/login';
@@ -60,6 +45,9 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   if (pathname === '/admin/login') {
     return <AdminLoginPage />;
   }
+
+  // null = still checking auth, show nothing to avoid SSR router.replace crash
+  if (isAuthenticated === null) return null;
 
   if (!isAuthenticated) {
     router.replace(`/admin/login?redirect=${encodeURIComponent(pathname)}`);

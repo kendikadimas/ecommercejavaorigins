@@ -1,19 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
+import { randomBytes } from 'crypto';
+
+const ALLOWED_MIME: Record<string, string> = {
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+  'image/gif': '.gif',
+};
+const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
+
+// ponytail: in-memory rate limit per IP — resets on process restart (fine for shared hosting)
+const hits = new Map<string, { count: number; resetAt: number }>();
+const LIMIT = 20; // uploads
+const WINDOW_MS = 15 * 60 * 1000; // 15 min
+
+function rateLimited(ip: string): boolean {
+  const now = Date.now();
+  const row = hits.get(ip);
+  if (!row || now > row.resetAt) {
+    hits.set(ip, { count: 1, resetAt: now + WINDOW_MS });
+    return false;
+  }
+  row.count += 1;
+  return row.count > LIMIT;
+}
 
 export async function POST(req: NextRequest) {
+  // cPanel disk is persistent — keep local /public/uploads (no cloud needed)
+  const ip = req.ip || 'unknown';
+  if (rateLimited(ip)) {
+    return NextResponse.json({ error: 'Terlalu banyak upload. Coba lagi nanti.' }, { status: 429 });
+  }
+
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
 
     if (!file) {
-      // Fallback: Check if base64 payload is passed
-      const body = await req.json().catch(() => null);
-      if (body?.image) {
-        return NextResponse.json({ url: body.image });
-      }
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    }
+
+    const ext = ALLOWED_MIME[file.type];
+    if (!ext) {
+      return NextResponse.json(
+        { error: 'Tipe file tidak diizinkan. Gunakan JPEG, PNG, WebP, atau GIF.' },
+        { status: 400 }
+      );
+    }
+
+    if (file.size > MAX_SIZE) {
+      return NextResponse.json({ error: 'Ukuran file maksimal 5 MB.' }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();
@@ -22,13 +60,12 @@ export async function POST(req: NextRequest) {
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
     await mkdir(uploadsDir, { recursive: true });
 
-    const safeFilename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-    const filePath = path.join(uploadsDir, safeFilename);
-    await writeFile(filePath, buffer);
+    // ignore client filename — only use safe random name + mime-derived ext
+    const safeFilename = `${Date.now()}-${randomBytes(8).toString('hex')}${ext}`;
+    await writeFile(path.join(uploadsDir, safeFilename), buffer);
 
-    const fileUrl = `/uploads/${safeFilename}`;
-    return NextResponse.json({ url: fileUrl });
-  } catch (error) {
+    return NextResponse.json({ url: `/uploads/${safeFilename}` });
+  } catch {
     return NextResponse.json({ error: 'Failed to process file upload' }, { status: 500 });
   }
 }
