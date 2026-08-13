@@ -1,1 +1,7 @@
 node_modules
+.next
+.env
+.env.local
+deploy-cpanel.zip
+*.log
+.DS_Store
