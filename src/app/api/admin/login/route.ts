@@ -1,42 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
+import fs from 'fs';
+import path from 'path';
+import { COOKIE_CONFIG, signPayload } from '@/lib/auth';
+import { isRateLimited, LIMITS } from '@/lib/rate-limit';
+
+// ponytail: read hash from file to avoid Apache $-expansion eating the bcrypt hash
+function getAdminHash(): string {
+  const hashFile = path.join(process.cwd(), 'admin_hash.txt');
+  if (fs.existsSync(hashFile)) return fs.readFileSync(hashFile, 'utf8').trim();
+  return process.env.ADMIN_PASSWORD_HASH || '';
+}
 
 export async function POST(req: NextRequest) {
   try {
+    if (isRateLimited(req, 'admin-login', LIMITS.ADMIN_LOGIN)) {
+      return NextResponse.json(
+        { error: 'Terlalu banyak percobaan login. Coba lagi dalam 15 menit.' },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json().catch(() => ({}));
     const { email, password } = body;
 
     const cleanInput = (email || '').trim().toLowerCase();
     const cleanPassword = (password || '').trim();
 
-    // Flexible credentials: Accepts "admin", "admin@javaorigins.com", or any username containing "admin"
-    const isUserValid =
-      cleanInput === 'admin' ||
-      cleanInput === 'admin@javaorigins.com' ||
-      cleanInput.startsWith('admin');
+    const adminEmail = (process.env.ADMIN_EMAIL || '').toLowerCase();
+    const adminHash = getAdminHash();
 
-    const isPassValid = cleanPassword === 'admin123';
-
-    if (isUserValid && isPassValid) {
-      const response = NextResponse.json({
-        success: true,
-        message: 'Login berhasil',
-      });
-
-      // Set cookie for server and client
-      response.cookies.set('java_admin_auth', 'authenticated', {
-        path: '/',
-        httpOnly: false,
-        maxAge: 60 * 60 * 24, // 24 hours
-        sameSite: 'lax',
-      });
-
-      return response;
+    if (!adminEmail || !adminHash) {
+      return NextResponse.json({ error: 'Konfigurasi admin tidak ditemukan' }, { status: 500 });
     }
 
-    return NextResponse.json(
-      { error: 'Username/Email atau Password salah! Periksa kembali ketikan Anda.' },
-      { status: 401 }
-    );
+    const emailMatch = cleanInput === adminEmail;
+    const passMatch = emailMatch && (await bcrypt.compare(cleanPassword, adminHash));
+
+    if (!emailMatch || !passMatch) {
+      return NextResponse.json(
+        { error: 'Username/Email atau Password salah! Periksa kembali ketikan Anda.' },
+        { status: 401 }
+      );
+    }
+
+    const response = NextResponse.json({ success: true, message: 'Login berhasil' });
+    response.cookies.set('java_admin_auth', signPayload({ id: 'admin' }), {
+      ...COOKIE_CONFIG,
+      maxAge: 60 * 60 * 24,
+    });
+    return response;
   } catch (error) {
     return NextResponse.json({ error: 'Gagal memproses verifikasi login' }, { status: 500 });
   }

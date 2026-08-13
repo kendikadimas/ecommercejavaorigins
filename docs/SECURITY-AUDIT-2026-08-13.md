@@ -88,9 +88,26 @@ plaintext-nya tersimpan di riwayat wajib re-hash.
 
 ### 2. Rate limiting login/register & order (C5, C9)
 
-**Keputusan (sesi ini):** order TIDAK wajib login (dibiarkan). Rate limiting pada
-endpoint login/register belum dikerjakan — masih open. Disarankan tambahkan
-shared per-IP limiter (pola yang sama seperti di `api/upload/route.ts`).
+**Sudah dikerjakan (sesi ini):** helper shared di `src/lib/rate-limit.ts`
+(`isRateLimited` + config `LIMITS`). Dipasang di:
+
+| Endpoint | Limit (per IP per 15 menit) |
+|----------|------------------------------|
+| `POST /api/auth/login` | 10 percobaan |
+| `POST /api/auth/register` | 5 pendaftaran |
+| `POST /api/admin/login` | 5 percobaan |
+| `POST /api/auth/change-password` | 5 |
+| `POST /api/auth/reset` | 5 |
+| `POST /api/auth/forgot` | 5 |
+| `POST /api/orders` | 10 pesanan |
+| `POST /api/upload` | 20 (perilaku lama) |
+
+Catatan keputusan: order TIDAK wajib login, tapi dibatasi 10/15 menit per IP —
+tidak mengganggu pembeli normal, menghambat bot yang ingin mengunci stok.
+Limit sengaja longgar agar alur bisnis tidak terganggu. In-memory → reset saat
+process restart (acceptable untuk shared hosting).
+
+Masih open: purge riwayat git jika repo pernah di-push publik.
 
 ### 3. Nomor WhatsApp — **DIPUTUSKAN: pakai 460**
 
