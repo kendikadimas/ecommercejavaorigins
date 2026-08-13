@@ -844,9 +844,9 @@ export const store = {
       await conn.beginTransaction();
 
       const orderId = crypto.randomUUID();
-      const orderNum = `JO-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(
-        1000 + Math.random() * 9000
-      )}`;
+      const orderNum = `JO-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(
+        Date.now() % 100000
+      ).padStart(5, '0')}${Math.floor(10 + Math.random() * 90)}`;
       const createdAt = nowISO();
 
       // Stock: lock rows, verify, decrement (same write as order create)
@@ -944,6 +944,23 @@ export const store = {
     const conn = await db.getConnection();
     try {
       await conn.beginTransaction();
+      // Re-read the order row with a lock so two concurrent transitions can't both
+      // release/re-reserve stock (M1). If the status changed since the read above,
+      // abort this transition.
+      const [locked] = await conn.query<RowDataPacket[]>(
+        'SELECT status FROM orders WHERE id = ? FOR UPDATE',
+        [existing.id]
+      );
+      if (!locked.length) {
+        await conn.rollback();
+        return null;
+      }
+      const currentStatus = locked[0].status as OrderType['status'];
+      if (fromStatuses && !fromStatuses.includes(currentStatus)) {
+        await conn.rollback();
+        return null;
+      }
+
       if (paymentProofUrl) {
         await conn.query('UPDATE orders SET status = ?, payment_proof_url = ?, updated_at = ? WHERE id = ?', [
           status,
@@ -960,8 +977,8 @@ export const store = {
       }
 
       // REJECTED (from a stock-holding status): return reserved stock to the shelf
-      const RELEASABLE = ['PENDING_PAYMENT', 'WAITING_APPROVAL', 'PAID'];
-      if (status === 'REJECTED' && RELEASABLE.includes(existing.status)) {
+      const RELEASABLE = ['PENDING_PAYMENT', 'WAITING_APPROVAL', 'PAID', 'SHIPPED'];
+      if (status === 'REJECTED' && RELEASABLE.includes(currentStatus)) {
         for (const item of existing.items) {
           if (!item.productId) continue;
           await conn.query('UPDATE products SET stock = stock + ?, updated_at = ? WHERE id = ?', [
@@ -976,7 +993,7 @@ export const store = {
       // re-reserve the stock that was released on reject. If any item can't be re-reserved
       // (stock ran out while this order was rejected), abort the whole transition.
       const HOLDS_STOCK = ['PENDING_PAYMENT', 'WAITING_APPROVAL', 'PAID', 'SHIPPED'];
-      if (existing.status === 'REJECTED' && HOLDS_STOCK.includes(status)) {
+      if (currentStatus === 'REJECTED' && HOLDS_STOCK.includes(status)) {
         for (const item of existing.items) {
           if (!item.productId) continue;
           const [res] = await conn.query<RowDataPacket[]>(

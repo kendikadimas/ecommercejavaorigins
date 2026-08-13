@@ -199,12 +199,32 @@ export async function getDb(): Promise<mysql.Pool> {
       for (const stmt of SCHEMA.split(';').map((s) => s.trim()).filter(Boolean)) {
         await conn.query(stmt);
       }
+      // M5: guarded migrations for tables created before newer columns existed
+      try {
+        await conn.query("ALTER TABLE orders ADD COLUMN shipping_method VARCHAR(16) DEFAULT ''");
+      } catch {
+        /* column already exists */
+      }
+      try {
+        await conn.query('ALTER TABLE orders ADD COLUMN shipping_cost DECIMAL(10,2) NOT NULL DEFAULT 0');
+      } catch {
+        /* column already exists */
+      }
+      try {
+        await conn.query('ALTER TABLE orders ADD UNIQUE INDEX uniq_orders_number (order_number)');
+      } catch {
+        /* index already exists (or duplicate rows) */
+      }
       await seedIfEmpty(conn);
     } finally {
       conn.release();
     }
     return p;
   })();
+  // M6: don't cache a permanently-rejected init (e.g. DB down at boot) — retry on next call
+  initPromise.catch(() => {
+    initPromise = null;
+  });
   return initPromise;
 }
 
