@@ -488,7 +488,10 @@ export default function CheckoutPage() {
                     }`}
                   >
                     {loading ? (
-                      <span>Processing Order...</span>
+                      <span className="flex items-center justify-center space-x-2">
+                        <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        <span>Processing Order...</span>
+                      </span>
                     ) : checkoutFlow === 'WHATSAPP' ? (
                       <>
                         <MessageSquare size={18} />

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
 import { CartDrawer } from '@/components/CartDrawer';
@@ -12,6 +12,11 @@ import { CornerLeaf } from '@/components/CornerLeaf';
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith('/admin');
+
+  // Scroll back to top on every route change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [pathname]);
 
   if (isAdminRoute) {
     return <main className="min-h-screen bg-[#140E0A] text-white">{children}</main>;
