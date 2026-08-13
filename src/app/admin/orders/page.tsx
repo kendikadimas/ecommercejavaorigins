@@ -273,7 +273,7 @@ export default function AdminOrdersPage() {
                         View
                       </button>
 
-                      {order.status !== 'PAID' && (
+                      {order.status === 'WAITING_APPROVAL' && (
                         <button
                           onClick={() => handleUpdateStatus(order.id, 'PAID')}
                           className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-lg text-[11px] shadow transition-all"
@@ -291,7 +291,7 @@ export default function AdminOrdersPage() {
                         </button>
                       )}
 
-                      {order.status !== 'REJECTED' && (
+                      {order.status !== 'REJECTED' && order.status !== 'SHIPPED' && (
                         <button
                           onClick={() => handleUpdateStatus(order.id, 'REJECTED')}
                           className="px-2.5 py-1.5 bg-red-100 text-red-700 hover:bg-red-600 hover:text-white rounded-lg font-bold text-[11px] transition-colors border border-red-300"
@@ -449,12 +449,20 @@ export default function AdminOrdersPage() {
               <span className="text-xs text-gray-500">Status: {getStatusBadge(selectedOrderDetails.status)}</span>
               
               <div className="flex space-x-2">
-                {selectedOrderDetails.status !== 'PAID' && (
+                {selectedOrderDetails.status === 'WAITING_APPROVAL' && (
                   <button
                     onClick={() => handleUpdateStatus(selectedOrderDetails.id, 'PAID')}
                     className="px-4 py-2 bg-emerald-600 text-white font-extrabold rounded-xl text-xs uppercase hover:bg-emerald-500 shadow"
                   >
                     Approve Payment
+                  </button>
+                )}
+                {selectedOrderDetails.status === 'PAID' && (
+                  <button
+                    onClick={() => handleUpdateStatus(selectedOrderDetails.id, 'SHIPPED')}
+                    className="px-4 py-2 bg-blue-600 text-white font-extrabold rounded-xl text-xs uppercase hover:bg-blue-500 shadow"
+                  >
+                    Ship Order
                   </button>
                 )}
                 <button
