@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const productId = searchParams.get('productId');
     if (!productId) {
-      return NextResponse.json({ error: 'productId wajib disertakan' }, { status: 400 });
+      return NextResponse.json({ error: 'productId is required' }, { status: 400 });
     }
     const reviews = await store.getReviewsByProduct(productId);
     const avg =
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
       { headers: { 'Cache-Control': 'no-store, max-age=0' } }
     );
   } catch {
-    return NextResponse.json({ error: 'Gagal memuat review' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to load reviews' }, { status: 500 });
   }
 }
 
@@ -34,24 +34,24 @@ export async function POST(req: NextRequest) {
   try {
     if (isRateLimited(req, 'review', LIMITS.REVIEW)) {
       return NextResponse.json(
-        { error: 'Terlalu banyak review. Coba lagi nanti.' },
+        { error: 'Too many reviews. Please try again later.' },
         { status: 429 }
       );
     }
     const user = getUserSession(req);
     if (!user) {
-      return NextResponse.json({ error: 'Login diperlukan untuk memberi review' }, { status: 401 });
+      return NextResponse.json({ error: 'Login is required to submit a review' }, { status: 401 });
     }
     const body = await req.json();
     if (!body.productId) {
-      return NextResponse.json({ error: 'productId wajib disertakan' }, { status: 400 });
+      return NextResponse.json({ error: 'productId is required' }, { status: 400 });
     }
     if (!validRating(body.rating)) {
-      return NextResponse.json({ error: 'Rating harus angka 1-5' }, { status: 400 });
+      return NextResponse.json({ error: 'Rating must be a number from 1 to 5' }, { status: 400 });
     }
     const product = await store.getProductById(body.productId);
     if (!product) {
-      return NextResponse.json({ error: 'Produk tidak ditemukan' }, { status: 404 });
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
     const review = await store.upsertReview({
       productId: body.productId,
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json(review, { status: 201 });
   } catch {
-    return NextResponse.json({ error: 'Gagal menyimpan review' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to save review' }, { status: 500 });
   }
 }
 
@@ -70,19 +70,19 @@ export async function DELETE(req: NextRequest) {
   try {
     const user = getUserSession(req);
     if (!user) {
-      return NextResponse.json({ error: 'Login diperlukan' }, { status: 401 });
+      return NextResponse.json({ error: 'Login is required' }, { status: 401 });
     }
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
     if (!id) {
-      return NextResponse.json({ error: 'ID review wajib disertakan' }, { status: 400 });
+      return NextResponse.json({ error: 'Review ID is required' }, { status: 400 });
     }
     const ok = await store.deleteReview(id, user.id);
     if (!ok) {
-      return NextResponse.json({ error: 'Review tidak ditemukan' }, { status: 404 });
+      return NextResponse.json({ error: 'Review not found' }, { status: 404 });
     }
     return NextResponse.json({ success: true, id });
   } catch {
-    return NextResponse.json({ error: 'Gagal menghapus review' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to delete review' }, { status: 500 });
   }
 }

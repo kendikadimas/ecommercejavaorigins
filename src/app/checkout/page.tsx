@@ -81,14 +81,14 @@ export default function CheckoutPage() {
   if (cart.length === 0) {
     return (
       <div className="bg-white min-h-screen py-20 text-center font-sans">
-        <div className="max-w-md mx-auto p-8 bg-[#EEF6E0] rounded-2xl border border-[#B4D397] space-y-4 shadow-sm">
-          <h2 className="text-2xl font-bold text-[#140E0A]">Keranjang Belanja Kosong</h2>
-          <p className="text-xs text-gray-500">Silakan tambahkan produk ke keranjang terlebih dahulu sebelum checkout.</p>
+        <div className="max-w-md mx-auto p-8 bg-white rounded-2xl border border-[#B4D397] space-y-4 shadow-sm">
+          <h2 className="text-2xl font-bold text-[#140E0A]">Your Shopping Cart is Empty</h2>
+          <p className="text-xs text-gray-500">Please add products to your cart before checking out.</p>
           <Link
             href="/shop"
             className="inline-block bg-[#140E0A] text-[#FACC15] font-extrabold px-6 py-2.5 rounded-xl text-xs uppercase tracking-wider"
           >
-            Kembali ke Toko
+            Back to Store
           </Link>
         </div>
       </div>
@@ -104,12 +104,12 @@ export default function CheckoutPage() {
     setError('');
 
     if (!user) {
-      setError('Anda wajib mendaftar atau masuk ke akun Anda terlebih dahulu sebelum membuat pesanan.');
+      setError('You must register or log in to your account before placing an order.');
       return;
     }
 
     if (!form.customerName || !form.customerPhone || !form.address) {
-      setError('Mohon lengkapi Nama, Nomor HP/WhatsApp, dan Alamat Lengkap.');
+      setError('Please complete Name, Phone/WhatsApp Number, and Full Address.');
       return;
     }
 
@@ -242,7 +242,7 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
           
           {/* Left Column: Form & Payment Selector */}
-          <div className="lg:col-span-7 bg-[#EEF6E0] p-6 sm:p-8 rounded-2xl border border-[#B4D397] shadow-sm space-y-8">
+          <div className="lg:col-span-7 bg-white p-6 sm:p-8 rounded-2xl border border-[#B4D397] shadow-sm space-y-8">
             
             {/* Flow selector tab */}
             <div>
@@ -439,14 +439,14 @@ export default function CheckoutPage() {
                           </div>
 
                           {method.instructions && (
-                            <div className="mt-3 pt-3 border-t border-[#CBE0B4]/70 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono text-[#22491F] bg-[#EAF3DB] p-3 rounded-xl">
-                              <div className="bg-[#EEF6E0]/90 px-2.5 py-1.5 rounded-lg border border-[#B4D397] text-[11px]">
+                            <div className="mt-3 pt-3 border-t border-[#CBE0B4]/70 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono text-[#22491F] bg-white p-3 rounded-xl">
+                              <div className="bg-white/90 px-2.5 py-1.5 rounded-lg border border-[#B4D397] text-[11px]">
                                 <span className="font-bold text-[#8C3A2B] uppercase">PARTICULAR:</span> <span className="font-bold text-[#140E0A]">{form.customerName || 'Your Name'}</span>
                               </div>
-                              <div className="bg-[#EEF6E0]/90 px-2.5 py-1.5 rounded-lg border border-[#B4D397] text-[11px]">
+                              <div className="bg-white/90 px-2.5 py-1.5 rounded-lg border border-[#B4D397] text-[11px]">
                                 <span className="font-bold text-[#8C3A2B] uppercase">CODE:</span> <span className="font-bold text-[#140E0A]">{formatPrice(totalAmount)}</span>
                               </div>
-                              <div className="bg-[#EEF6E0]/90 px-2.5 py-1.5 rounded-lg border border-[#B4D397] text-[11px]">
+                              <div className="bg-white/90 px-2.5 py-1.5 rounded-lg border border-[#B4D397] text-[11px]">
                                 <span className="font-bold text-[#8C3A2B] uppercase">REF:</span> <span className="font-bold text-[#140E0A]">Auto Order ID</span>
                               </div>
                             </div>
@@ -499,7 +499,7 @@ export default function CheckoutPage() {
           </div>
 
           {/* Right Column: Order Summary Breakdown */}
-          <div className="lg:col-span-5 bg-[#EEF6E0] p-6 sm:p-8 rounded-2xl border border-[#B4D397] shadow-sm space-y-6 sticky top-28">
+          <div className="lg:col-span-5 bg-white p-6 sm:p-8 rounded-2xl border border-[#B4D397] shadow-sm space-y-6 sticky top-28">
             <h3 className="text-xl font-extrabold text-[#140E0A] border-b border-[#EAF3DB] pb-4">
               Order Summary ({cart.length} Items)
             </h3>
@@ -508,7 +508,7 @@ export default function CheckoutPage() {
               {cart.map((item) => (
                 <div key={item.product.id} className="py-3 flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-[#EAF3DB] border border-[#CBE0B4] flex-shrink-0">
+                    <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-[#F5F5F5] border border-[#E0E0E0] flex-shrink-0">
                       <Image src={item.product.image} alt={item.product.name} fill className="object-cover" />
                       <span className="absolute top-0 right-0 bg-[#140E0A] text-[#FACC15] text-[10px] font-bold w-4 h-4 rounded-bl flex items-center justify-center">
                         {item.quantity}

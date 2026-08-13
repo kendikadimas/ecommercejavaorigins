@@ -21,15 +21,15 @@ function ResetPasswordInner() {
     e.preventDefault();
     setErrorMsg('');
     if (!token) {
-      setErrorMsg('Link reset tidak valid.');
+      setErrorMsg('Reset link is invalid.');
       return;
     }
     if (password.length < 8) {
-      setErrorMsg('Password minimal 8 karakter.');
+      setErrorMsg('Password must be at least 8 characters.');
       return;
     }
     if (password !== confirm) {
-      setErrorMsg('Konfirmasi password tidak cocok.');
+      setErrorMsg('Password confirmation does not match.');
       return;
     }
     setSubmitting(true);
@@ -40,10 +40,10 @@ function ResetPasswordInner() {
         body: JSON.stringify({ token, password }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Gagal mereset password.');
+      if (!res.ok) throw new Error(data.error || 'Failed to reset password.');
       setDone(true);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Terjadi kesalahan.');
+      setErrorMsg(err.message || 'Something went wrong.');
     } finally {
       setSubmitting(false);
     }
@@ -52,17 +52,17 @@ function ResetPasswordInner() {
   if (done) {
     return (
       <div className="bg-white min-h-[80vh] flex items-center justify-center p-4 font-sans py-12">
-        <div className="bg-[#EEF6E0] border border-[#B4D397] rounded-2xl w-full max-w-md p-6 sm:p-8 shadow-xl text-center space-y-4">
+        <div className="bg-white border border-[#B4D397] rounded-2xl w-full max-w-md p-6 sm:p-8 shadow-xl text-center space-y-4">
           <CheckCircle2 size={40} className="mx-auto text-[#276F27]" />
-          <h1 className="text-xl font-extrabold text-[#26421F]">Password Berhasil Diubah</h1>
+          <h1 className="text-xl font-extrabold text-[#26421F]">Password Changed Successfully</h1>
           <p className="text-sm text-gray-600 font-normal">
-            Anda bisa login dengan password baru sekarang.
+            You can now log in with your new password.
           </p>
           <Link
             href="/login"
             className="inline-block mt-2 bg-[#276F27] text-white font-extrabold px-6 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-colors"
           >
-            Login Sekarang
+            Login Now
           </Link>
         </div>
       </div>
@@ -71,12 +71,12 @@ function ResetPasswordInner() {
 
   return (
     <div className="bg-white min-h-[80vh] flex items-center justify-center p-4 font-sans py-12">
-      <div className="bg-[#EEF6E0] border border-[#B4D397] rounded-2xl w-full max-w-md p-6 sm:p-8 shadow-xl space-y-6">
+      <div className="bg-white border border-[#B4D397] rounded-2xl w-full max-w-md p-6 sm:p-8 shadow-xl space-y-6">
         <div className="text-center space-y-2">
           <span className="text-xs font-bold uppercase tracking-widest text-[#276F27]">JAVA ORIGINS STORE</span>
-          <h1 className="text-2xl font-extrabold text-[#26421F]">Buat Password Baru</h1>
+          <h1 className="text-2xl font-extrabold text-[#26421F]">Create a New Password</h1>
           <p className="text-xs text-gray-500 font-normal">
-            Masukkan password baru untuk akun Anda.
+            Enter a new password for your account.
           </p>
         </div>
 
@@ -89,14 +89,14 @@ function ResetPasswordInner() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-[#44663A] mb-1">Password Baru *</label>
+            <label className="block text-xs font-semibold text-[#44663A] mb-1">New Password *</label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Minimal 8 karakter"
+                placeholder="At least 8 characters"
                 className="w-full pl-10 pr-10 py-2.5 bg-[#F2F7E9] border border-[#C9D3BE] rounded-xl text-sm text-[#26421F] focus:outline-none focus:border-[#276F27] font-normal"
               />
               <Lock size={18} className="absolute left-3 top-3 text-gray-400" />
@@ -112,14 +112,14 @@ function ResetPasswordInner() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#44663A] mb-1">Konfirmasi Password *</label>
+            <label className="block text-xs font-semibold text-[#44663A] mb-1">Confirm Password *</label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
-                placeholder="Ulangi password baru"
+                placeholder="Repeat new password"
                 className="w-full pl-10 pr-4 py-2.5 bg-[#F2F7E9] border border-[#C9D3BE] rounded-xl text-sm text-[#26421F] focus:outline-none focus:border-[#276F27] font-normal"
               />
               <Lock size={18} className="absolute left-3 top-3 text-gray-400" />
@@ -131,7 +131,7 @@ function ResetPasswordInner() {
             disabled={submitting}
             className="w-full py-3 bg-[#276F27] hover:bg-[#276F27] text-white font-extrabold rounded-xl text-xs uppercase tracking-wider transition-colors shadow"
           >
-            {submitting ? 'Menyimpan...' : 'Simpan Password Baru'}
+            {submitting ? 'Saving...' : 'Save New Password'}
           </button>
         </form>
       </div>

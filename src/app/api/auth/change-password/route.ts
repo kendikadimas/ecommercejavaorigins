@@ -10,29 +10,29 @@ export async function POST(req: NextRequest) {
   try {
     if (isRateLimited(req, 'change-password', LIMITS.PASSWORD)) {
       return NextResponse.json(
-        { error: 'Terlalu banyak permintaan. Coba lagi nanti.' },
+        { error: 'Too many requests. Please try again later.' },
         { status: 429 }
       );
     }
 
     const user = getUserSession(req);
     if (!user) {
-      return NextResponse.json({ error: 'Login diperlukan.' }, { status: 401 });
+      return NextResponse.json({ error: 'Login is required.' }, { status: 401 });
     }
     const body = await req.json();
     const current = String(body.current || '');
     const newPassword = String(body.newPassword || '');
 
     if (!current || !newPassword) {
-      return NextResponse.json({ error: 'Password lama dan baru wajib diisi.' }, { status: 400 });
+      return NextResponse.json({ error: 'Current and new password are required.' }, { status: 400 });
     }
     if (newPassword.length < 8) {
-      return NextResponse.json({ error: 'Password baru minimal 8 karakter.' }, { status: 400 });
+      return NextResponse.json({ error: 'New password must be at least 8 characters.' }, { status: 400 });
     }
 
     const dbUser = await store.getUserById(user.id);
     if (!dbUser || !dbUser.password) {
-      return NextResponse.json({ error: 'Akun tidak ditemukan.' }, { status: 400 });
+      return NextResponse.json({ error: 'Account not found.' }, { status: 400 });
     }
 
     const isHashed = dbUser.password.startsWith('$2');
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       ? await bcrypt.compare(current, dbUser.password)
       : dbUser.password === current;
     if (!match) {
-      return NextResponse.json({ error: 'Password saat ini salah.' }, { status: 400 });
+      return NextResponse.json({ error: 'Current password is incorrect.' }, { status: 400 });
     }
 
     const hashed = await bcrypt.hash(newPassword, 12);
@@ -48,6 +48,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('[change-password] error:', error);
-    return NextResponse.json({ error: 'Gagal mengubah password.' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to change password.' }, { status: 500 });
   }
 }

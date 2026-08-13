@@ -18,6 +18,6 @@ export async function GET(req: NextRequest) {
       { headers: { 'Cache-Control': 'no-store, max-age=0' } }
     );
   } catch (error) {
-    return NextResponse.json({ error: 'Gagal memuat riwayat pesanan.' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to load order history.' }, { status: 500 });
   }
 }

@@ -93,7 +93,7 @@ export default function AdminProductsPage() {
   };
 
   const handleDeleteCategory = (index: number) => {
-    if (!confirm(`Hapus kategori "${categories[index]}"?`)) return;
+    if (!confirm(`Delete category "${categories[index]}"?`)) return;
     setCategories(categories.filter((_, i) => i !== index));
   };
 
@@ -141,10 +141,10 @@ export default function AdminProductsPage() {
       if (resData.url) {
         setFormData((prev) => ({ ...prev, image: resData.url }));
       } else {
-        alert(resData.error || 'Gagal mengunggah foto');
+        alert(resData.error || 'Failed to upload image');
       }
     } catch (err) {
-      alert('Gagal mengunggah foto dari folder.');
+      alert('Failed to upload image from folder.');
     } finally {
       setUploading(false);
     }
@@ -182,7 +182,7 @@ export default function AdminProductsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus produk ini?')) return;
+    if (!confirm('Are you sure you want to delete this product?')) return;
     await fetch(`/api/products?id=${id}`, { method: 'DELETE' });
     fetchProducts();
   };
@@ -461,7 +461,7 @@ export default function AdminProductsPage() {
               </button>
             </div>
 
-            {/* Input Tambah Kategori Baru */}
+            {/* Add New Category */}
             <div className="space-y-2">
               <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500">
                 Add New Category
@@ -485,7 +485,7 @@ export default function AdminProductsPage() {
               </div>
             </div>
 
-            {/* List Kategori */}
+            {/* Category List */}
             <div className="space-y-2 border-t border-black/10 pt-4">
               <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500">
                 Active Categories ({categories.length})
@@ -604,7 +604,7 @@ export default function AdminProductsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Harga ($ NZD) *</label>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Price ($ NZD) *</label>
                   <input
                     type="number"
                     step="0.01"
@@ -661,7 +661,7 @@ export default function AdminProductsPage() {
                     <div className="w-16 h-16 rounded-lg overflow-hidden border border-black/10 bg-black flex-shrink-0 relative">
                       <img
                         src={formData.image}
-                        alt="Preview Foto"
+                        alt="Image Preview"
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           (e.target as HTMLElement).style.display = 'none';

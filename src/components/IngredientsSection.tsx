@@ -78,9 +78,9 @@ export const IngredientsSection = () => {
           {INGREDIENTS.map((item, idx) => (
             <div
               key={idx}
-              className="bg-[#F7FBEF] border border-[#CBE0B4] rounded-2xl p-4 flex flex-col items-center text-center hover:border-[#499A13] transition-all transform hover:-translate-y-1 shadow-lg group"
+              className="bg-white border border-[#CBE0B4] rounded-2xl p-4 flex flex-col items-center text-center hover:border-[#499A13] transition-all transform hover:-translate-y-1 shadow-lg group"
             >
-              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden mb-3 bg-[#EAF3DB] border border-[#CBE0B4]">
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden mb-3 bg-[#F5F5F5] border border-[#E0E0E0]">
                 <Image
                   src={item.image}
                   alt={item.name}

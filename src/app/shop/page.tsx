@@ -40,7 +40,7 @@ function ShopInner() {
   useEffect(() => {
     fetch('/api/products')
       .then((res) => {
-        if (!res.ok) throw new Error('Gagal memuat produk');
+        if (!res.ok) throw new Error('Failed to load products');
         return res.json();
       })
       .then((data) => {
@@ -48,7 +48,7 @@ function ShopInner() {
           setProducts(data.filter((p) => p.active));
         }
       })
-      .catch(() => setFetchError('Gagal memuat produk dari server. Data sementara ditampilkan.'));
+      .catch(() => setFetchError('Failed to load products dari server. Data sementara ditampilkan.'));
     fetch('/api/product-ratings')
       .then((res) => res.json())
       .then((data) => {
@@ -111,7 +111,7 @@ function ShopInner() {
         </div>
 
         {/* Search & Category Filter Controls */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-10 bg-[#EEF6E0] p-3 sm:p-4 rounded-3xl border border-[#B4D397] shadow-xs">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-10 bg-white p-3 sm:p-4 rounded-3xl border border-[#B4D397] shadow-xs">
           
           {/* Search bar */}
           <div className="relative w-full md:w-80">
@@ -120,7 +120,7 @@ function ShopInner() {
               placeholder="Search products..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-[#EAF3DB] border border-transparent rounded-2xl text-sm text-[#140E0A] placeholder-gray-400 focus:outline-none focus:border-[#499A13] transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-transparent rounded-2xl text-sm text-[#140E0A] placeholder-gray-400 focus:outline-none focus:border-[#499A13] transition-all"
             />
             <Search size={18} className="absolute left-3.5 top-3 text-gray-400" />
           </div>
@@ -152,7 +152,7 @@ function ShopInner() {
 
         {/* Product Grid */}
         {filteredProducts.length === 0 ? (
-          <div className="text-center py-20 bg-[#EEF6E0] rounded-3xl border border-[#B4D397]">
+          <div className="text-center py-20 bg-white rounded-3xl border border-[#B4D397]">
             <p className="font-serif text-xl font-bold text-[#140E0A]">No products found</p>
             <p className="text-xs text-gray-500 mt-1">Try matching another search keyword or category filter.</p>
           </div>
@@ -166,7 +166,7 @@ function ShopInner() {
               >
                 <div>
                   {/* Image Container */}
-                  <div className="relative aspect-square bg-[#EAF3DB] overflow-hidden">
+                  <div className="relative aspect-square bg-[#F5F5F5] overflow-hidden">
                     <Image
                       src={product.image}
                       alt={product.name}

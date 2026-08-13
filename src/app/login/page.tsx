@@ -44,7 +44,7 @@ function CustomerLoginInner() {
 
   return (
     <div className="bg-white min-h-[80vh] flex items-center justify-center p-4 font-sans py-12">
-      <div className="bg-[#EEF6E0] border border-[#B4D397] rounded-2xl w-full max-w-md p-6 sm:p-8 shadow-xl space-y-6">
+      <div className="bg-white border border-[#B4D397] rounded-2xl w-full max-w-md p-6 sm:p-8 shadow-xl space-y-6">
         
         <div className="text-center space-y-2">
           <span className="text-xs font-bold uppercase tracking-widest text-[#276F27]">JAVA ORIGINS STORE</span>

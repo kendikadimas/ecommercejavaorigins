@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   try {
     if (isRateLimited(req, 'forgot', LIMITS.FORGOT)) {
       return NextResponse.json(
-        { error: 'Terlalu banyak permintaan. Coba lagi nanti.' },
+        { error: 'Too many requests. Please try again later.' },
         { status: 429 }
       );
     }
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const email = String(body.email || '').trim().toLowerCase();
     if (!email) {
-      return NextResponse.json({ error: 'Email wajib diisi.' }, { status: 400 });
+      return NextResponse.json({ error: 'Email is required.' }, { status: 400 });
     }
 
     const user = await store.getUserByEmail(email);
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     // prod must have an explicit site URL — never trust the Host header for reset links
     const baseUrl = configuredUrl || (isProd ? '' : `http://${req.headers.get('host')}`);
     if (!baseUrl) {
-      return NextResponse.json({ error: 'SITE_URL belum dikonfigurasi.' }, { status: 500 });
+      return NextResponse.json({ error: 'SITE_URL is not configured.' }, { status: 500 });
     }
     const resetUrl = `${baseUrl}/reset-password?token=${token}`;
     const escName = user.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -46,18 +46,18 @@ export async function POST(req: NextRequest) {
       to: email,
       subject: 'Reset Password - Java Origins',
       html: `<div style="font-family:sans-serif;max-width:480px;margin:auto">
-        <h2>Reset Password Anda</h2>
-        <p>Halo ${escName},</p>
-        <p>Kami menerima permintaan reset password untuk akun Anda. Klik tombol di bawah untuk mengatur password baru. Link berlaku 1 jam.</p>
+        <h2>Reset Your Password</h2>
+        <p>Hi ${escName},</p>
+        <p>We received a request to reset the password for your account. Click the button below to set a new password. The link is valid for 1 hour.</p>
         <p style="margin:24px 0"><a href="${resetUrl}" style="background:#276F27;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold">Reset Password</a></p>
-        <p style="font-size:12px;color:#888">Jika tombol tidak berfungsi, salin tautan ini:<br/>${resetUrl}</p>
-        <p style="font-size:12px;color:#888">Jika Anda tidak meminta ini, abaikan email ini.</p>
+        <p style="font-size:12px;color:#888">If the button does not work, copy this link:<br/>${resetUrl}</p>
+        <p style="font-size:12px;color:#888">If you did not request this, you can safely ignore this email.</p>
       </div>`,
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('[forgot] error:', error);
-    return NextResponse.json({ error: 'Gagal memproses permintaan reset.' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to process the reset request.' }, { status: 500 });
   }
 }

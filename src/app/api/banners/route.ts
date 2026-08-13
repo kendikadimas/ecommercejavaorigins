@@ -17,12 +17,12 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   if (!getAdminSession(req)) {
-    return NextResponse.json({ error: 'Akses ditolak' }, { status: 403 });
+    return NextResponse.json({ error: 'Access denied' }, { status: 403 });
   }
   try {
     const body = await req.json();
     if (!body.imageUrl) {
-      return NextResponse.json({ error: 'Foto banner wajib diunggah' }, { status: 400 });
+      return NextResponse.json({ error: 'Banner image is required' }, { status: 400 });
     }
     const created = await store.createBanner({
       title: body.title || '',
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   if (!getAdminSession(req)) {
-    return NextResponse.json({ error: 'Akses ditolak' }, { status: 403 });
+    return NextResponse.json({ error: 'Access denied' }, { status: 403 });
   }
   try {
     const body = await req.json();
@@ -59,7 +59,7 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   if (!getAdminSession(req)) {
-    return NextResponse.json({ error: 'Akses ditolak' }, { status: 403 });
+    return NextResponse.json({ error: 'Access denied' }, { status: 403 });
   }
   try {
     const { searchParams } = new URL(req.url);

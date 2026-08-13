@@ -90,7 +90,7 @@ export default function OrderStatusPage() {
   if (!order) {
     return (
       <div className="bg-white min-h-screen py-20 text-center font-sans">
-        <div className="max-w-md mx-auto p-8 bg-[#EEF6E0] rounded-2xl border border-[#B4D397] space-y-4 shadow-sm">
+        <div className="max-w-md mx-auto p-8 bg-white rounded-2xl border border-[#B4D397] space-y-4 shadow-sm">
           <AlertCircle size={40} className="mx-auto text-amber-500" />
           <h2 className="text-2xl font-bold text-[#140E0A]">Order Not Found</h2>
           <p className="text-xs text-gray-500">Order number or ID is not valid.</p>
@@ -154,7 +154,7 @@ export default function OrderStatusPage() {
         </div>
 
         {/* Top Status Header */}
-        <div className="bg-[#EEF6E0] p-6 sm:p-8 rounded-2xl border border-[#B4D397] shadow-sm space-y-4">
+        <div className="bg-white p-6 sm:p-8 rounded-2xl border border-[#B4D397] shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#EAF3DB] pb-4">
             <div>
               <p className="text-xs text-[#5A7543] font-semibold uppercase tracking-wider">Order Status</p>
@@ -202,7 +202,7 @@ export default function OrderStatusPage() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
           
           {/* Left Column: Bank / QRIS Details */}
-          <div className="md:col-span-6 bg-[#EEF6E0] p-6 rounded-2xl border border-[#B4D397] shadow-sm space-y-4">
+          <div className="md:col-span-6 bg-white p-6 rounded-2xl border border-[#B4D397] shadow-sm space-y-4">
             <h3 className="text-lg font-bold border-b border-[#EAF3DB] pb-3 text-[#140E0A]">
               Transfer Payment Instructions
             </h3>
@@ -239,7 +239,7 @@ export default function OrderStatusPage() {
                 )}
 
                 {order.paymentMethod.instructions && (
-                  <div className="p-4 bg-[#EAF3DB] rounded-xl space-y-2 text-xs font-mono text-[#22491F]">
+                  <div className="p-4 bg-white rounded-xl space-y-2 text-xs font-mono text-[#22491F]">
                     <p className="text-[11px] font-sans font-bold text-[#5A7543] uppercase tracking-wider">
                       Reference Details for ASB Bank Transfer:
                     </p>
@@ -266,7 +266,7 @@ export default function OrderStatusPage() {
           </div>
 
           {/* Right Column: Upload Bukti Pembayaran */}
-          <div className="md:col-span-6 bg-[#EEF6E0] p-6 rounded-2xl border border-[#B4D397] shadow-sm space-y-4">
+          <div className="md:col-span-6 bg-white p-6 rounded-2xl border border-[#B4D397] shadow-sm space-y-4">
             <h3 className="text-lg font-bold border-b border-[#EAF3DB] pb-3 text-[#140E0A]">
               Submit Payment Proof
             </h3>
@@ -282,7 +282,7 @@ export default function OrderStatusPage() {
               <div className="space-y-3">
                 <p className="text-xs text-[#5A7543] font-normal">Transfer Proof Uploaded:</p>
                 <div className="relative aspect-video rounded-xl overflow-hidden border border-[#CBE0B4] bg-[#FAFAF7]">
-                  <Image src={proofUrl} alt="Bukti Pembayaran" fill className="object-cover" />
+                  <Image src={proofUrl} alt="Payment Proof" fill className="object-cover" />
                 </div>
                 <div className="text-center">
                   <label className="inline-block text-xs font-semibold text-[#499A13] cursor-pointer hover:underline">

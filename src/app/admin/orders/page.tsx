@@ -270,7 +270,7 @@ export default function AdminOrdersPage() {
                             : 'bg-[#2E2016] text-white hover:bg-white/20'
                         }`}
                       >
-                        Detail
+                        View
                       </button>
 
                       {order.status !== 'PAID' && (
@@ -329,7 +329,7 @@ export default function AdminOrdersPage() {
             <div className="relative rounded-xl overflow-hidden bg-black border border-black/10 flex items-center justify-center min-h-[250px]">
               <img
                 src={selectedProof}
-                alt="Bukti Transfer Pelanggan"
+                alt="Customer Transfer Proof"
                 className="max-h-[65vh] w-full object-contain mx-auto"
                 onError={(e) => {
                   (e.target as HTMLElement).style.display = 'none';
@@ -432,7 +432,7 @@ export default function AdminOrdersPage() {
                   <div className="relative aspect-video rounded-xl overflow-hidden border border-black/10 bg-black max-h-56">
                     <img
                       src={selectedOrderDetails.paymentProofUrl}
-                      alt="Struk Bukti Bayar"
+                      alt="Payment Receipt"
                       className="w-full h-full object-contain"
                     />
                   </div>

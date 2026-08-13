@@ -48,7 +48,7 @@ export default function AdminPaymentMethodsPage() {
       accountNumber: '8830123456',
       accountName: 'PT Java Origins Herbal',
       qrCodeUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80',
-      instructions: 'Silakan transfer sesuai total tagihan, kemudian unggah struk bukti bayar di halaman status pesanan.',
+      instructions: 'Please transfer the total amount, then upload your payment proof on the order status page.',
       active: true,
     });
     setIsModalOpen(true);
@@ -82,10 +82,10 @@ export default function AdminPaymentMethodsPage() {
       if (resData.url) {
         setFormData((prev) => ({ ...prev, qrCodeUrl: resData.url }));
       } else {
-        alert(resData.error || 'Gagal mengunggah foto QRIS');
+        alert(resData.error || 'Failed to upload QRIS image');
       }
     } catch (err) {
-      alert('Gagal mengunggah foto dari folder.');
+      alert('Failed to upload image from folder.');
     } finally {
       setUploading(false);
     }
@@ -122,7 +122,7 @@ export default function AdminPaymentMethodsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus metode pembayaran ini?')) return;
+    if (!confirm('Are you sure you want to delete this payment method?')) return;
     await fetch(`/api/payment-methods?id=${id}`, { method: 'DELETE' });
     fetchMethods();
   };
@@ -148,7 +148,7 @@ export default function AdminPaymentMethodsPage() {
               isLight ? 'text-[#2C1D11]' : 'text-white'
             }`}
           >
-            Kelola Metode Pembayaran
+            Manage Payment Methods
           </h1>
         </div>
         <button
@@ -156,7 +156,7 @@ export default function AdminPaymentMethodsPage() {
           className="bg-[#D97706] hover:bg-[#B45309] text-white font-extrabold px-6 py-3 rounded-xl transition-colors flex items-center justify-center space-x-2 text-xs uppercase tracking-wider shadow-md"
         >
           <Plus size={18} />
-          <span>Tambah Metode Baru</span>
+          <span>Add New Method</span>
         </button>
       </div>
 
@@ -177,11 +177,11 @@ export default function AdminPaymentMethodsPage() {
                 </div>
                 {m.active ? (
                   <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
-                    Aktif
+                    Active
                   </span>
                 ) : (
                   <span className="bg-red-100 text-red-800 border border-red-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
-                    Non-Aktif
+                    Inactive
                   </span>
                 )}
               </div>
@@ -191,7 +191,7 @@ export default function AdminPaymentMethodsPage() {
                   isLight ? 'bg-[#FAF8F5] border-[#E6DEC9]' : 'bg-[#140E0A] border-white/10'
                 }`}
               >
-                <p className="text-gray-500 font-normal">Nomor Rekening / QRIS ID:</p>
+                <p className="text-gray-500 font-normal">Account Number / QRIS ID:</p>
                 <p
                   className={`font-mono text-base font-extrabold select-all ${
                     isLight ? 'text-[#B45309]' : 'text-[#FACC15]'
@@ -200,7 +200,7 @@ export default function AdminPaymentMethodsPage() {
                   {m.accountNumber}
                 </p>
                 <p className="font-normal">
-                  Atas Nama: <strong className="font-bold">{m.accountName}</strong>
+                  Account Name: <strong className="font-bold">{m.accountName}</strong>
                 </p>
               </div>
 
@@ -215,7 +215,7 @@ export default function AdminPaymentMethodsPage() {
                   </div>
                   <div className="text-[11px]">
                     <span className="font-bold text-[#D97706] flex items-center">
-                      <QrCode size={14} className="mr-1" /> QRIS Aktif
+                      <QrCode size={14} className="mr-1" /> QRIS Active
                     </span>
                     <p className="text-gray-500 font-normal line-clamp-1">{m.qrCodeUrl}</p>
                   </div>
@@ -240,7 +240,7 @@ export default function AdminPaymentMethodsPage() {
                 className="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-600 hover:text-white border border-red-300 text-xs font-bold rounded-lg transition-colors flex items-center space-x-1"
               >
                 <Trash2 size={14} />
-                <span>Hapus</span>
+                <span>Delete</span>
               </button>
             </div>
           </div>
@@ -258,7 +258,7 @@ export default function AdminPaymentMethodsPage() {
             {/* Header */}
             <div className="flex justify-between items-center px-6 py-4 border-b border-black/10 sticky top-0 z-10 rounded-t-2xl">
               <h3 className="text-lg sm:text-xl font-extrabold text-[#D97706]">
-                {editingMethod ? 'Edit Metode Pembayaran' : 'Tambah Metode Pembayaran'}
+                {editingMethod ? 'Edit Payment Method' : 'Add Payment Method'}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -271,7 +271,7 @@ export default function AdminPaymentMethodsPage() {
             {/* Form */}
             <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 flex-1">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Nama Tampilan Metode *</label>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Method Display Name *</label>
                 <input
                   type="text"
                   required
@@ -286,7 +286,7 @@ export default function AdminPaymentMethodsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Nama Bank / Provider *</label>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Bank / Provider Name *</label>
                   <input
                     type="text"
                     required
@@ -299,7 +299,7 @@ export default function AdminPaymentMethodsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">No. Rekening / ID QRIS *</label>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Account Number / QRIS ID *</label>
                   <input
                     type="text"
                     required
@@ -313,7 +313,7 @@ export default function AdminPaymentMethodsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Atas Nama Rekening *</label>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Account Name *</label>
                 <input
                   type="text"
                   required
@@ -327,7 +327,7 @@ export default function AdminPaymentMethodsPage() {
 
               {/* QRIS Image */}
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Foto Kode QRIS (Upload Folder / Link URL)</label>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">QRIS Code Image (Upload File / Link URL)</label>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="text"
@@ -360,7 +360,7 @@ export default function AdminPaymentMethodsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Instruksi Pembayaran</label>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Payment Instructions</label>
                 <textarea
                   rows={2}
                   value={formData.instructions}
@@ -380,7 +380,7 @@ export default function AdminPaymentMethodsPage() {
                   className="rounded text-[#D97706] focus:ring-[#D97706]"
                 />
                 <label htmlFor="activeMethodCheck" className="text-xs font-semibold text-gray-600">
-                  Tampilkan Metode Ini Saat Pembeli Checkout
+                  Show This Method at Checkout
                 </label>
               </div>
 
@@ -396,7 +396,7 @@ export default function AdminPaymentMethodsPage() {
                   type="submit"
                   className="px-6 py-2.5 rounded-xl bg-[#D97706] text-white text-xs font-extrabold uppercase hover:bg-[#B45309]"
                 >
-                  Simpan Metode
+                  Save Method
                 </button>
               </div>
             </form>

@@ -25,7 +25,7 @@ export async function PUT(req: NextRequest) {
   try {
     const session = getUserSession(req);
     if (!session) {
-      return NextResponse.json({ error: 'Tidak terautentikasi.' }, { status: 401 });
+      return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 });
     }
 
     const body = await req.json();
@@ -41,7 +41,7 @@ export async function PUT(req: NextRequest) {
     });
 
     if (!updated) {
-      return NextResponse.json({ error: 'Gagal memperbarui profil.' }, { status: 400 });
+      return NextResponse.json({ error: 'Failed to update profile.' }, { status: 400 });
     }
 
     const { password: _, ...safeUser } = updated;
@@ -54,6 +54,6 @@ export async function PUT(req: NextRequest) {
 
     return response;
   } catch (error) {
-    return NextResponse.json({ error: 'Gagal mengedit profil.' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to edit profile.' }, { status: 500 });
   }
 }

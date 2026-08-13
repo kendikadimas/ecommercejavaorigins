@@ -59,7 +59,7 @@ export default function ProductDetailPage() {
   useEffect(() => {
     fetch('/api/products')
       .then((res) => {
-        if (!res.ok) throw new Error('Gagal memuat produk');
+        if (!res.ok) throw new Error('Failed to load products');
         return res.json();
       })
       .then((data) => {
@@ -72,7 +72,7 @@ export default function ProductDetailPage() {
           }
         }
       })
-      .catch(() => setFetchError('Gagal memuat produk dari server. Data sementara ditampilkan.'));
+      .catch(() => setFetchError('Failed to load products dari server. Data sementara ditampilkan.'));
 
     const initialMatch = INITIAL_PRODUCTS.find((p) => p.id === id || p.slug === id);
     if (initialMatch && !product) {
@@ -117,7 +117,7 @@ export default function ProductDetailPage() {
     e.preventDefault();
     setReviewMsg('');
     if (!user) {
-      setReviewMsg('Login diperlukan untuk memberi review.');
+      setReviewMsg('Login is required to submit a review.');
       return;
     }
     if (!product) return;
@@ -132,16 +132,16 @@ export default function ProductDetailPage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Gagal menyimpan review');
-      setReviewMsg('Review berhasil disimpan.');
+      if (!res.ok) throw new Error(data.error || 'Failed to save review');
+      setReviewMsg('Review saved successfully.');
       loadReviews();
     } catch (err: any) {
-      setReviewMsg(err.message || 'Terjadi kesalahan.');
+      setReviewMsg(err.message || 'Something went wrong.');
     }
   };
 
   const handleDeleteReview = async (reviewId: string) => {
-    if (!confirm('Hapus review Anda?')) return;
+    if (!confirm('Delete your review?')) return;
     try {
       const res = await fetch(`/api/reviews?id=${reviewId}`, { method: 'DELETE' });
       if (res.ok) {
@@ -150,10 +150,10 @@ export default function ProductDetailPage() {
         setReviewComment('');
         loadReviews();
       } else {
-        alert('Gagal menghapus review.');
+        alert('Failed to delete review.');
       }
     } catch {
-      alert('Terjadi kesalahan saat menghapus review.');
+      alert('Something went wrong while deleting the review.');
     }
   };
 
@@ -342,8 +342,8 @@ export default function ProductDetailPage() {
               </h2>
               <p className="text-xs text-[#5A7543] mt-1">
                 {reviewCount === 0
-                  ? 'Belum ada review untuk produk ini.'
-                  : `Rata-rata ${reviewAvg.toFixed(1)} dari ${reviewCount} review.`}
+                  ? 'No reviews for this product yet.'
+                  : `Average ${reviewAvg.toFixed(1)} from ${reviewCount} review${reviewCount !== 1 ? 's' : ''}.`}
               </p>
             </div>
           </div>
@@ -388,7 +388,7 @@ export default function ProductDetailPage() {
                   value={reviewComment}
                   onChange={(e) => setReviewComment(e.target.value)}
                   rows={3}
-                  placeholder="Bagikan pengalaman Anda dengan produk ini..."
+                  placeholder="Share your experience with this product..."
                   className="w-full px-4 py-2.5 rounded-xl border border-[#E0E0E0] bg-white text-sm text-[#140E0A] focus:outline-none focus:border-[#499A13] font-normal"
                 />
               </div>
@@ -411,7 +411,7 @@ export default function ProductDetailPage() {
               <Link href={`/login?redirect=/products/${product.id}`} className="font-bold text-[#276F27] hover:underline">
                 Login
               </Link>{' '}
-              untuk menulis review.
+              to write a review.
             </p>
           )}
 

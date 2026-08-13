@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   try {
     if (isRateLimited(req, 'register', LIMITS.REGISTER)) {
       return NextResponse.json(
-        { error: 'Terlalu banyak permintaan pendaftaran. Coba lagi nanti.' },
+        { error: 'Too many registration requests. Please try again later.' },
         { status: 429 }
       );
     }
@@ -19,16 +19,16 @@ export async function POST(req: NextRequest) {
     const { name, email, password, phone, address, city, postalCode } = body;
 
     if (!name || !email || !password) {
-      return NextResponse.json({ error: 'Nama, Email, dan Password wajib diisi.' }, { status: 400 });
+      return NextResponse.json({ error: 'Name, email, and password are required.' }, { status: 400 });
     }
 
     if (password.length < 8) {
-      return NextResponse.json({ error: 'Password minimal 8 karakter.' }, { status: 400 });
+      return NextResponse.json({ error: 'Password must be at least 8 characters.' }, { status: 400 });
     }
 
     const existing = await store.getUserByEmail(email.trim().toLowerCase());
     if (existing) {
-      return NextResponse.json({ error: 'Email sudah terdaftar. Silakan login.' }, { status: 400 });
+      return NextResponse.json({ error: 'Email is already registered. Please log in.' }, { status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
@@ -54,6 +54,6 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error) {
-    return NextResponse.json({ error: 'Gagal mendaftarkan akun baru.' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create a new account.' }, { status: 500 });
   }
 }

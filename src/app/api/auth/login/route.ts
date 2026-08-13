@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   try {
     if (isRateLimited(req, 'login', LIMITS.LOGIN)) {
       return NextResponse.json(
-        { error: 'Terlalu banyak percobaan login. Coba lagi dalam 15 menit.' },
+        { error: 'Too many login attempts. Please try again in 15 minutes.' },
         { status: 429 }
       );
     }
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     const { email, password } = body;
 
     if (!email || !password) {
-      return NextResponse.json({ error: 'Email dan Password wajib diisi.' }, { status: 400 });
+      return NextResponse.json({ error: 'Email and password are required.' }, { status: 400 });
     }
 
     const cleanEmail = email.trim().toLowerCase();
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
     const user = await store.getUserByEmail(cleanEmail);
     if (!user || !user.password) {
-      return NextResponse.json({ error: 'Email atau Password salah.' }, { status: 401 });
+      return NextResponse.json({ error: 'Incorrect email or password.' }, { status: 401 });
     }
 
     const isHashed = user.password.startsWith('$2');
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       ? await bcrypt.compare(cleanPassword, user.password)
       : user.password === cleanPassword; // ponytail: plaintext fallback, rehash on success
     if (!passMatch) {
-      return NextResponse.json({ error: 'Email atau Password salah.' }, { status: 401 });
+      return NextResponse.json({ error: 'Incorrect email or password.' }, { status: 401 });
     }
 
     if (!isHashed) {
@@ -54,6 +54,6 @@ export async function POST(req: NextRequest) {
     return response;
   } catch (error) {
     console.error('[login] error:', error);
-    return NextResponse.json({ error: 'Gagal melakukan login.' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to log in.' }, { status: 500 });
   }
 }

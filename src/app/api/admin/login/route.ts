@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   try {
     if (isRateLimited(req, 'admin-login', LIMITS.ADMIN_LOGIN)) {
       return NextResponse.json(
-        { error: 'Terlalu banyak percobaan login. Coba lagi dalam 15 menit.' },
+        { error: 'Too many login attempts. Please try again in 15 minutes.' },
         { status: 429 }
       );
     }
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     const adminHash = getAdminHash();
 
     if (!adminEmail || !adminHash) {
-      return NextResponse.json({ error: 'Konfigurasi admin tidak ditemukan' }, { status: 500 });
+      return NextResponse.json({ error: 'Admin configuration not found' }, { status: 500 });
     }
 
     const emailMatch = cleanInput === adminEmail;
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
 
     if (!emailMatch || !passMatch) {
       return NextResponse.json(
-        { error: 'Username/Email atau Password salah! Periksa kembali ketikan Anda.' },
+        { error: 'Incorrect username/email or password! Please check your input.' },
         { status: 401 }
       );
     }
@@ -51,6 +51,6 @@ export async function POST(req: NextRequest) {
     });
     return response;
   } catch (error) {
-    return NextResponse.json({ error: 'Gagal memproses verifikasi login' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to verify login' }, { status: 500 });
   }
 }

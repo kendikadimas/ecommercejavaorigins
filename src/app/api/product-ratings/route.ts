@@ -10,6 +10,6 @@ export async function GET() {
       headers: { 'Cache-Control': 'no-store, max-age=0' },
     });
   } catch {
-    return NextResponse.json({ error: 'Gagal memuat rating' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to load ratings' }, { status: 500 });
   }
 }

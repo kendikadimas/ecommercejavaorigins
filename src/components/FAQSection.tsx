@@ -62,7 +62,7 @@ export const FAQSection = () => {
               <div
                 key={idx}
                 className={`overflow-hidden transition-all shadow-sm border ${
-                  isOpen ? 'bg-[#F7FBEF] border-[#499A13]' : 'bg-[#276F27] border-[#276F27]'
+                  isOpen ? 'bg-white border-[#499A13]' : 'bg-[#276F27] border-[#276F27]'
                 }`}
                 style={{ borderRadius: '0.75rem' }}
               >
@@ -83,7 +83,7 @@ export const FAQSection = () => {
                 </button>
 
                 {isOpen && (
-                  <div className="px-6 pb-6 text-sm text-[#22491F] leading-relaxed border-t border-[#CBE0B4] pt-4 bg-[#F7FBEF]">
+                  <div className="px-6 pb-6 text-sm text-[#22491F] leading-relaxed border-t border-[#CBE0B4] pt-4 bg-white">
                     {faq.a}
                   </div>
                 )}

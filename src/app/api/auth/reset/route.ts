@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   try {
     if (isRateLimited(req, 'reset', LIMITS.PASSWORD)) {
       return NextResponse.json(
-        { error: 'Terlalu banyak permintaan. Coba lagi nanti.' },
+        { error: 'Too many requests. Please try again later.' },
         { status: 429 }
       );
     }
@@ -21,24 +21,24 @@ export async function POST(req: NextRequest) {
     const password = String(body.password || '');
 
     if (!token || !password) {
-      return NextResponse.json({ error: 'Token dan password wajib diisi.' }, { status: 400 });
+      return NextResponse.json({ error: 'Token and password are required.' }, { status: 400 });
     }
     if (password.length < 8) {
-      return NextResponse.json({ error: 'Password minimal 8 karakter.' }, { status: 400 });
+      return NextResponse.json({ error: 'Password must be at least 8 characters.' }, { status: 400 });
     }
 
     const tokenHash = createHash('sha256').update(token).digest('hex');
     const reset = await store.getPasswordReset(tokenHash);
     if (!reset || reset.used) {
-      return NextResponse.json({ error: 'Link reset tidak valid atau sudah digunakan.' }, { status: 400 });
+      return NextResponse.json({ error: 'Reset link is invalid or already used.' }, { status: 400 });
     }
     if (new Date(reset.expires_at).getTime() < Date.now()) {
-      return NextResponse.json({ error: 'Link reset sudah kedaluwarsa.' }, { status: 400 });
+      return NextResponse.json({ error: 'Reset link has expired.' }, { status: 400 });
     }
 
     const user = await store.getUserByEmail(reset.email);
     if (!user) {
-      return NextResponse.json({ error: 'Akun tidak ditemukan.' }, { status: 400 });
+      return NextResponse.json({ error: 'Account not found.' }, { status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
@@ -48,17 +48,17 @@ export async function POST(req: NextRequest) {
     const escName = user.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     await sendMail({
       to: user.email,
-      subject: 'Password Berhasil Diubah - Java Origins',
+      subject: 'Password Changed - Java Origins',
       html: `<div style="font-family:sans-serif;max-width:480px;margin:auto">
-        <h2>Password Diubah</h2>
+        <h2>Password Changed</h2>
         <p>Halo ${escName},</p>
-        <p>Password akun Java Origins Anda telah berhasil diubah. Jika ini bukan Anda, segera hubungi admin.</p>
+        <p>Your Java Origins account password has been changed. If this was not you, please contact admin immediately.</p>
       </div>`,
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('[reset] error:', error);
-    return NextResponse.json({ error: 'Gagal mereset password.' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to reset password.' }, { status: 500 });
   }
 }

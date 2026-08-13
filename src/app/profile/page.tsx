@@ -38,11 +38,11 @@ export default function CustomerProfilePage() {
     e.preventDefault();
     setPwdMessage({ type: '', text: '' });
     if (pwdForm.next.length < 8) {
-      setPwdMessage({ type: 'error', text: 'Password baru minimal 8 karakter.' });
+      setPwdMessage({ type: 'error', text: 'New password must be at least 8 characters.' });
       return;
     }
     if (pwdForm.next !== pwdForm.confirm) {
-      setPwdMessage({ type: 'error', text: 'Konfirmasi password tidak cocok.' });
+      setPwdMessage({ type: 'error', text: 'Password confirmation does not match.' });
       return;
     }
     setSavingPwd(true);
@@ -53,11 +53,11 @@ export default function CustomerProfilePage() {
         body: JSON.stringify({ current: pwdForm.current, newPassword: pwdForm.next }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Gagal mengubah password.');
-      setPwdMessage({ type: 'success', text: 'Password berhasil diubah.' });
+      if (!res.ok) throw new Error(data.error || 'Failed to change password.');
+      setPwdMessage({ type: 'success', text: 'Password changed successfully.' });
       setPwdForm({ current: '', next: '', confirm: '' });
     } catch (err: any) {
-      setPwdMessage({ type: 'error', text: err.message || 'Terjadi kesalahan.' });
+      setPwdMessage({ type: 'error', text: err.message || 'Something went wrong.' });
     } finally {
       setSavingPwd(false);
     }
@@ -159,7 +159,7 @@ export default function CustomerProfilePage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
         {/* User Card Header */}
-        <div className="bg-[#EEF6E0] border border-[#B4D397] p-6 sm:p-8 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="bg-white border border-[#B4D397] p-6 sm:p-8 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 rounded-full bg-[#276F27] text-white flex items-center justify-center font-extrabold text-2xl shadow">
               {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
@@ -239,7 +239,7 @@ export default function CustomerProfilePage() {
             {loadingOrders ? (
               <p className="text-xs text-gray-500">Loading order history...</p>
             ) : orders.length === 0 ? (
-              <div className="bg-[#EEF6E0] border border-[#B4D397] p-8 rounded-2xl text-center space-y-3">
+              <div className="bg-white border border-[#B4D397] p-8 rounded-2xl text-center space-y-3">
                 <ShoppingBag size={40} className="mx-auto text-gray-300" />
                 <h3 className="text-base font-bold text-[#26421F]">No Orders Yet</h3>
                 <p className="text-xs text-gray-500">You haven't placed any orders at Java Origins yet.</p>
@@ -254,7 +254,7 @@ export default function CustomerProfilePage() {
               orders.map((order) => (
                 <div
                   key={order.id}
-                  className="bg-[#EEF6E0] border border-[#B4D397] rounded-2xl p-6 shadow-sm space-y-4 hover:border-[#276F27]/40 transition-colors"
+                  className="bg-white border border-[#B4D397] rounded-2xl p-6 shadow-sm space-y-4 hover:border-[#276F27]/40 transition-colors"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
                     <div>
@@ -300,7 +300,7 @@ export default function CustomerProfilePage() {
 
         {/* TAB 2: EDIT PROFIL */}
         {activeTab === 'PROFILE' && (
-          <div className="bg-[#EEF6E0] border border-[#B4D397] p-6 sm:p-8 rounded-2xl shadow-sm space-y-6">
+          <div className="bg-white border border-[#B4D397] p-6 sm:p-8 rounded-2xl shadow-sm space-y-6">
             <div>
               <h2 className="text-xl font-extrabold text-[#26421F]">Edit Customer Profile</h2>
               <p className="text-xs text-gray-500 font-normal">Update your personal information & shipping address.</p>
@@ -398,7 +398,7 @@ export default function CustomerProfilePage() {
 
         {/* TAB 3: NOTIFIKASI EMAIL */}
         {activeTab === 'NOTIFICATIONS' && (
-          <div className="bg-[#EEF6E0] border border-[#B4D397] p-6 sm:p-8 rounded-2xl shadow-sm space-y-4">
+          <div className="bg-white border border-[#B4D397] p-6 sm:p-8 rounded-2xl shadow-sm space-y-4">
             <div>
               <h2 className="text-xl font-extrabold text-[#26421F]">Email Notifications Received ({user.email})</h2>
               <p className="text-xs text-gray-500 font-normal">
@@ -431,11 +431,11 @@ export default function CustomerProfilePage() {
 
         {/* TAB 4: SECURITY — GANTI PASSWORD */}
         {activeTab === 'SECURITY' && (
-          <div className="bg-[#EEF6E0] border border-[#B4D397] p-6 sm:p-8 rounded-2xl shadow-sm space-y-4">
+          <div className="bg-white border border-[#B4D397] p-6 sm:p-8 rounded-2xl shadow-sm space-y-4">
             <div>
               <h2 className="text-xl font-extrabold text-[#26421F]">Change Password</h2>
               <p className="text-xs text-gray-500 font-normal">
-                Update password akun Anda secara berkala demi keamanan.
+                Update your account password regularly for security.
               </p>
             </div>
 
@@ -454,35 +454,35 @@ export default function CustomerProfilePage() {
 
             <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
               <div>
-                <label className="block text-xs font-semibold text-[#44663A] mb-1">Password Saat Ini *</label>
+                <label className="block text-xs font-semibold text-[#44663A] mb-1">Current Password *</label>
                 <input
                   type="password"
                   required
                   value={pwdForm.current}
                   onChange={(e) => setPwdForm({ ...pwdForm, current: e.target.value })}
-                  placeholder="Password lama"
+                  placeholder="Current password"
                   className="w-full px-4 py-2.5 bg-[#F2F7E9] border border-[#C9D3BE] rounded-xl text-sm text-[#26421F] focus:outline-none focus:border-[#276F27] font-normal"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#44663A] mb-1">Password Baru *</label>
+                <label className="block text-xs font-semibold text-[#44663A] mb-1">New Password *</label>
                 <input
                   type="password"
                   required
                   value={pwdForm.next}
                   onChange={(e) => setPwdForm({ ...pwdForm, next: e.target.value })}
-                  placeholder="Minimal 8 karakter"
+                  placeholder="At least 8 characters"
                   className="w-full px-4 py-2.5 bg-[#F2F7E9] border border-[#C9D3BE] rounded-xl text-sm text-[#26421F] focus:outline-none focus:border-[#276F27] font-normal"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#44663A] mb-1">Konfirmasi Password Baru *</label>
+                <label className="block text-xs font-semibold text-[#44663A] mb-1">Confirm New Password *</label>
                 <input
                   type="password"
                   required
                   value={pwdForm.confirm}
                   onChange={(e) => setPwdForm({ ...pwdForm, confirm: e.target.value })}
-                  placeholder="Ulangi password baru"
+                  placeholder="Repeat new password"
                   className="w-full px-4 py-2.5 bg-[#F2F7E9] border border-[#C9D3BE] rounded-xl text-sm text-[#26421F] focus:outline-none focus:border-[#276F27] font-normal"
                 />
               </div>
@@ -492,7 +492,7 @@ export default function CustomerProfilePage() {
                 className="px-6 py-2.5 bg-[#276F27] hover:bg-[#276F27] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-colors shadow inline-flex items-center space-x-2"
               >
                 <Save size={14} />
-                <span>{savingPwd ? 'Menyimpan...' : 'Ubah Password'}</span>
+                <span>{savingPwd ? 'Saving...' : 'Change Password'}</span>
               </button>
             </form>
           </div>

@@ -5,7 +5,7 @@ import { AlertCircle } from 'lucide-react';
 
 // ponytail: visible error indicator when a fetch fails — seed data fallback stays, but no silent mask
 export const FetchErrorBanner: React.FC<{ message?: string }> = ({
-  message = 'Gagal memuat data dari server. Data sementara sedang ditampilkan.',
+  message = 'Failed to load data from the server. Temporary data is being shown.',
 }) => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">

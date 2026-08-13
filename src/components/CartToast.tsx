@@ -29,7 +29,7 @@ export const CartToast = () => {
         <p className="text-xs sm:text-sm font-bold truncate max-w-[240px] sm:max-w-sm">
           {name}
         </p>
-        <span className="text-[11px] font-semibold text-green-100">ditambahkan ke keranjang</span>
+        <span className="text-[11px] font-semibold text-green-100">added to cart</span>
       </div>
     </div>
   );

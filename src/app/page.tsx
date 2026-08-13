@@ -23,7 +23,7 @@ export default function HomePage() {
   useEffect(() => {
     fetch('/api/products')
       .then((res) => {
-        if (!res.ok) throw new Error('Gagal memuat produk');
+        if (!res.ok) throw new Error('Failed to load products');
         return res.json();
       })
       .then((data) => {
@@ -31,7 +31,7 @@ export default function HomePage() {
           setProducts(data.filter((p) => p.active));
         }
       })
-      .catch(() => setFetchError('Gagal memuat produk dari server. Data sementara ditampilkan.'));
+      .catch(() => setFetchError('Failed to load products dari server. Data sementara ditampilkan.'));
     fetch('/api/product-ratings')
       .then((res) => res.json())
       .then((data) => {
@@ -79,7 +79,7 @@ export default function HomePage() {
               >
                 <div>
                   {/* Image Container */}
-                  <div className="relative aspect-square bg-[#EAF3DB] overflow-hidden">
+                  <div className="relative aspect-square bg-[#F5F5F5] overflow-hidden">
                     <Image
                       src={product.image}
                       alt={product.name}
@@ -169,7 +169,7 @@ export default function HomePage() {
           opacity={0.3}
         />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="bg-[#F7FBEF]/95 border border-[#CBE0B4] rounded-3xl p-6 sm:p-8 lg:p-10 relative overflow-hidden shadow-xl">
+          <div className="bg-white/95 border border-[#CBE0B4] rounded-3xl p-6 sm:p-8 lg:p-10 relative overflow-hidden shadow-xl">
             
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
               

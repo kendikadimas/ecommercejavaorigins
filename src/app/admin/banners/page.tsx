@@ -84,10 +84,10 @@ export default function AdminBannersPage() {
       if (resData.url) {
         setFormData((prev) => ({ ...prev, imageUrl: resData.url }));
       } else {
-        setErrorMsg(resData.error || 'Gagal mengunggah foto banner');
+        setErrorMsg(resData.error || 'Failed to upload banner image');
       }
     } catch (err) {
-      setErrorMsg('Gagal mengunggah banner dari folder.');
+      setErrorMsg('Failed to upload banner from folder.');
     } finally {
       setUploading(false);
     }
@@ -98,7 +98,7 @@ export default function AdminBannersPage() {
     setErrorMsg('');
 
     if (!formData.imageUrl) {
-      setErrorMsg('Foto Banner wajib diisi.');
+      setErrorMsg('Banner image is required.');
       return;
     }
 
@@ -121,7 +121,7 @@ export default function AdminBannersPage() {
         });
 
         const updated = await res.json();
-        if (!res.ok) throw new Error(updated.error || 'Gagal memperbarui banner');
+        if (!res.ok) throw new Error(updated.error || 'Failed to update banner');
 
         setBanners((prev) => prev.map((b) => (b.id === editingBanner.id ? { ...b, ...updated } : b)));
       } else {
@@ -132,7 +132,7 @@ export default function AdminBannersPage() {
         });
 
         const created = await res.json();
-        if (!res.ok) throw new Error(created.error || 'Gagal membuat banner');
+        if (!res.ok) throw new Error(created.error || 'Failed to create banner');
 
         setBanners((prev) => [created, ...prev]);
       }
@@ -140,21 +140,21 @@ export default function AdminBannersPage() {
       setIsModalOpen(false);
       fetchBanners();
     } catch (err: any) {
-      setErrorMsg(err.message || 'Terjadi kesalahan saat menyimpan banner.');
+      setErrorMsg(err.message || 'Something went wrong while saving the banner.');
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus banner ini?')) return;
+    if (!confirm('Are you sure you want to delete this banner?')) return;
 
     try {
       const res = await fetch(`/api/banners?id=${id}`, { method: 'DELETE' });
       if (res.ok) {
         setBanners((prev) => prev.filter((b) => b.id !== id));
       } else {
-        alert('Gagal menghapus banner.');
+        alert('Failed to delete banner.');
       }
     } catch {
       alert('Terjadi kesalahan saat menghapus banner.');
@@ -256,7 +256,7 @@ export default function AdminBannersPage() {
                   className="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-600 hover:text-white border border-red-300 text-xs font-bold rounded-lg transition-colors flex items-center space-x-1"
                 >
                   <Trash2 size={14} />
-                  <span>Hapus</span>
+                  <span>Delete</span>
                 </button>
               </div>
             </div>
@@ -322,7 +322,7 @@ export default function AdminBannersPage() {
 
               {/* Image Input with Live Preview */}
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Foto Banner (Upload Folder / Link URL) *</label>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Banner Image (Upload File / Link URL) *</label>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="text"
@@ -336,7 +336,7 @@ export default function AdminBannersPage() {
                   />
                   <label className="px-4 py-2.5 bg-[#D97706] text-white rounded-xl text-xs font-extrabold cursor-pointer hover:bg-[#B45309] flex items-center justify-center space-x-1 whitespace-nowrap">
                     <Upload size={14} />
-                    <span>{uploading ? 'Mengunggah...' : 'Pilih Foto Folder'}</span>
+                    <span>{uploading ? 'Uploading...' : 'Choose File'}</span>
                     <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
                   </label>
                 </div>
@@ -348,7 +348,7 @@ export default function AdminBannersPage() {
                       isLight ? 'bg-[#FAF8F5] border-[#D6CBB8]' : 'bg-[#140E0A] border-white/10'
                     }`}
                   >
-                    <p className="text-xs font-bold text-[#D97706]">Preview Foto Banner:</p>
+                    <p className="text-xs font-bold text-[#D97706]">Banner Preview:</p>
                     <div className="relative aspect-video rounded-lg overflow-hidden border border-black/10 bg-black">
                       <img src={formData.imageUrl} alt="Preview Banner" className="w-full h-full object-cover" />
                     </div>
@@ -391,7 +391,7 @@ export default function AdminBannersPage() {
                   className="rounded text-[#D97706] focus:ring-[#D97706]"
                 />
                 <label htmlFor="activeBannerCheck" className="text-xs font-semibold text-gray-600">
-                  Tampilkan Banner di Hero Slider Homepage
+                  Show Banner on Homepage Hero Slider
                 </label>
               </div>
 
@@ -408,7 +408,7 @@ export default function AdminBannersPage() {
                   disabled={submitting}
                   className="px-6 py-2.5 rounded-xl bg-[#D97706] text-white text-xs font-extrabold uppercase hover:bg-[#B45309]"
                 >
-                  {submitting ? 'Menyimpan...' : 'Simpan Banner'}
+                  {submitting ? 'Saving...' : 'Save Banner'}
                 </button>
               </div>
             </form>
