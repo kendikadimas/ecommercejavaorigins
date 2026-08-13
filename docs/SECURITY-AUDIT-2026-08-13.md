@@ -76,49 +76,34 @@ di server (cPanel).
 
 ### 1. KRITIS — Secret & PII ter-commit di git (C1, C3, m13)
 
-- `.env` ter-track di git berisi: `SESSION_SECRET`, `ADMIN_PASSWORD_HASH`, `DATABASE_URL`.
-- `data/db.json` (dan `src/data/db.json`) ter-track berisi: PII customer asli
-  (`selly26@gmail.com`, `085866077520`, alamat) + **password plaintext**
-  (`Password`, `akualya`, `user123`) + 17 order.
-- Risiko: jika repo di-push/publik → semua bocor.
+**Sudah diperbaiki (sesi ini):** `.env`, `data/db.json`, `src/data/db.json` di-untrack
+dari git (`git rm --cached`). File tetap ada di disk (app tetap jalan), tapi tidak
+lagi ikut versi git. Catatan: db.json adalah sisa database JSON sebelum migrasi ke
+MySQL — app tidak membacanya, hanya file-nya tersimpan di riwayat git.
 
-**Aksi yang disarankan:**
-```bash
-git rm --cached .env
-git rm --cached data/db.json src/data/db.json
-# jika riwayat sudah ter-push, gunakan git filter-repo / BFG untuk purge
-```
-Lalu: rotate `SESSION_SECRET`, `ADMIN_PASSWORD_HASH`, kredensial DB.
-Akun yang password plaintext-nya tersimpan: wajib re-hash via login (sudah ada
-fallback rehash otomatis di `api/auth/login/route.ts`) atau reset manual.
+**Masih perlu (jika repo pernah di-push publik):** purge riwayat dengan
+`git filter-repo` / BFG agar file tidak bisa dipulihkan dari commit lama, lalu
+rotate `SESSION_SECRET`, `ADMIN_PASSWORD_HASH`, kredensial DB. Akun yang password
+plaintext-nya tersimpan di riwayat wajib re-hash.
 
 ### 2. Rate limiting login/register & order (C5, C9)
 
-- `login`, `register`, `admin/login`, `change-password`, `reset` tanpa throttle.
-- `POST /api/orders` tanpa login & tanpa rate limit → bisa menghabiskan stok
-  (order PENDING_PAYMENT tak berbayar mengunci stok sampai di-REJECT admin).
+**Keputusan (sesi ini):** order TIDAK wajib login (dibiarkan). Rate limiting pada
+endpoint login/register belum dikerjakan — masih open. Disarankan tambahkan
+shared per-IP limiter (pola yang sama seperti di `api/upload/route.ts`).
 
-**Aksi:** tambah shared per-IP limiter (pola yang sama seperti di
-`api/upload/route.ts`) pada semua endpoint kredensial + order POST. Perlu konfirmasi
-apakah order wajib login.
+### 3. Nomor WhatsApp — **DIPUTUSKAN: pakai 460**
 
-### 3. Nomor WhatsApp bentrok (m4)
+Nomor resmi: `6282130613460`. `NEXT_PUBLIC_ADMIN_WA` di `.env`, fallback di
+`checkout/page.tsx` dan `PartnerBanner.tsx` sudah diubah ke `6282130613460`.
 
-- `Footer.tsx` hardcode `6282130613460`.
-- `.env` / `checkout` / `PartnerBanner` pakai `6287864562253`.
+### 4. Hardcoded kontak di Footer — **DIPUTUSKAN: biarkan** (sudah benar)
 
-**Aksi:** konfirmasi nomor resmi, centralize di env `NEXT_PUBLIC_ADMIN_WA`.
+### 5. Seed data menutupi kegagalan API — **DIPUTUSKAN: tambah indikator error**
 
-### 4. Hardcoded kontak lain di Footer (m5)
-
-`+64212532492`, `javaorigins.nz@gmail.com`, link `instagram.com`/`tiktok.com` generic,
-alamat Bandung & NZ — pastikan benar atau pindah ke env.
-
-### 5. Seed data menutupi kegagalan API (m6)
-
-`INITIAL_PRODUCTS`, `INITIAL_BANNERS`, `INITIAL_PAYMENT_METHODS` dipakai sebagai
-fallback + `.catch(() => {})` — jika DB mati, storefront tampil statis tanpa error.
-**Aksi:** pertimbangkan menampilkan indikator error / blokir fallback saat fetch gagal.
+Komponen `FetchErrorBanner` baru; dipasang di home, shop, dan product detail.
+Saat fetch gagal, banner amber tampil ("Gagal memuat data dari server...") dan
+seed data tetap sebagai fallback agar halaman tidak kosong.
 
 ### 6. Env vars di cPanel (wajib sebelum deploy)
 

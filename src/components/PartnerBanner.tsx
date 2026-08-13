@@ -4,13 +4,13 @@ import React from 'react';
 import Link from 'next/link';
 
 export const PartnerBanner = () => {
-  const adminWa = process.env.NEXT_PUBLIC_ADMIN_WA || '6287864562253';
+  const adminWa = process.env.NEXT_PUBLIC_ADMIN_WA || '6282130613460';
   const waUrl = `https://wa.me/${adminWa}?text=${encodeURIComponent(
     'Hello Admin Java Origins, I am interested in becoming a partner / reseller of Java Origins products.'
   )}`;
 
   return (
-    <section id="partner" className="py-16 bg-[#1A120C] px-4 sm:px-6 lg:px-8">
+    <section id="partner" className="py-16 bg-white px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       <div className="max-w-6xl mx-auto bg-[#FACC15] rounded-3xl p-8 sm:p-12 text-center text-[#140E0A] shadow-2xl relative overflow-hidden">
         
         {/* Decorative elements */}
@@ -42,3 +42,4 @@ export const PartnerBanner = () => {
     </section>
   );
 };
+ 
