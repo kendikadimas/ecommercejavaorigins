@@ -176,6 +176,9 @@ export async function PUT(req: NextRequest) {
       if (!order) {
         return NextResponse.json({ error: 'Order not found' }, { status: 404 });
       }
+      if (order.checkoutType === 'WHATSAPP') {
+        return NextResponse.json({ error: 'WhatsApp orders are confirmed directly — no proof upload needed' }, { status: 400 });
+      }
       if (order.status !== 'PENDING_PAYMENT' && order.status !== 'WAITING_APPROVAL' && order.status !== 'REJECTED') {
         return NextResponse.json({ error: 'Order status does not allow uploading proof' }, { status: 400 });
       }

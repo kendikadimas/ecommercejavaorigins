@@ -920,12 +920,17 @@ export const store = {
 
       // Email notification (best-effort, di luar transaksi)
       if (data.customerEmail) {
+        const wa = data.checkoutType === 'WHATSAPP';
         this.sendEmailNotification(
           data.customerEmail,
          `Order Confirmation #${orderNum} - Java Origins`,
-         `Hi ${data.customerName}, your order #${orderNum} worth $${data.totalAmount.toFixed(
-           2
-         )} NZD has been received. Please complete the payment and upload your transfer proof.`
+         wa
+           ? `Hi ${data.customerName}, your order #${orderNum} worth $${data.totalAmount.toFixed(
+               2
+             )} NZD has been received. Our team will confirm it via WhatsApp shortly.`
+           : `Hi ${data.customerName}, your order #${orderNum} worth $${data.totalAmount.toFixed(
+               2
+             )} NZD has been received. Please complete the payment and upload your transfer proof.`
         ).catch(() => {});
       }
 
