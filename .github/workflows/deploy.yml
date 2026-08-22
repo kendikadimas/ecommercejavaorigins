@@ -37,27 +37,39 @@ jobs:
             required-server-files.json routes-manifest.json
         working-directory: .
 
-      - name: Deploy & restart
-        env:
-          SSHPASS: ${{ secrets.SSH_PASS }}
-          HOST: ${{ secrets.SSH_HOST }}
-          USER: ${{ secrets.SSH_USER }}
-          PORT: ${{ secrets.SSH_PORT }}
-          APP: ${{ secrets.SSH_APP_PATH }}
+      - name: Upload zip via FTP
         run: |
-          sudo apt-get install -y sshpass
-          OPTS="-o StrictHostKeyChecking=no -p $PORT"
+          curl --ftp-create-dirs \
+            -u "${{ secrets.SSH_USER }}:${{ secrets.SSH_PASS }}" \
+            -T next-deploy.zip \
+            "ftp://103.30.147.53${{ secrets.SSH_APP_PATH }}/next-deploy.zip"
 
-          # Upload zip
-          sshpass -e scp $OPTS next-deploy.zip $USER@$HOST:$APP/
+      - name: Extract & restart via cPanel API
+        run: |
+          BASE="https://wirogunan.idweb.host:2083"
+          AUTH="${{ secrets.SSH_USER }}:${{ secrets.SSH_PASS }}"
+          APP="${{ secrets.SSH_APP_PATH }}"
 
-          # Extract + copy static + restart
-          sshpass -e ssh $OPTS $USER@$HOST "
-            set -e
-            cd $APP
-            unzip -o next-deploy.zip -d .next
-            chmod -R u+rwx .next
-            tar cf - .next/static | (cd ~/public_html/public/_next && tar xf -)
-            rm next-deploy.zip
-            pkill -f 'lsnode:' || true
-          "
+          # Extract zip into .next/
+          curl -sk -u "$AUTH" \
+            "$BASE/execute/Fileman/extract_file" \
+            -d "dir=$APP&files=next-deploy.zip&dest=$APP/.next" | jq .
+
+          # chmod via API
+          curl -sk -u "$AUTH" \
+            "$BASE/execute/Fileman/set_permissions" \
+            -d "path=$APP/.next&permissions=755&recursive=1" | jq .
+
+          # Delete zip
+          curl -sk -u "$AUTH" \
+            "$BASE/execute/Fileman/delete_files" \
+            -d "files-0=$APP/next-deploy.zip" | jq .
+
+          # Restart Node.js app (stop then start)
+          curl -sk -u "$AUTH" \
+            "$BASE/execute/PassengerApps/stop_app" \
+            -d "app=$APP" | jq .
+          sleep 3
+          curl -sk -u "$AUTH" \
+            "$BASE/execute/PassengerApps/start_app" \
+            -d "app=$APP" | jq .
