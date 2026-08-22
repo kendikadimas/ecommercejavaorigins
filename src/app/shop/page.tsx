@@ -59,15 +59,9 @@ function ShopInner() {
 
   const dbCategories = Array.from(new Set(products.map((p) => p.category)));
   const allCategories = ['ALL', 'Herbal Drink', 'Food & Snacks', 'Herbal Care'];
+  const SUPPRESSED = /herbal.?(beverage|drink)|food.?(and|&).?snack|herbal.?care|fashion/i;
   dbCategories.forEach((cat) => {
-    const isMapped =
-      cat === 'Herbal Beverage' ||
-      cat === 'Herbal Drink' ||
-      cat === 'Food & Snacks' ||
-      cat === 'Food and Snacks' ||
-      cat === 'Herbal Care' ||
-      cat === 'Fashion';
-    if (!isMapped && !allCategories.includes(cat)) {
+    if (!SUPPRESSED.test(cat) && !allCategories.includes(cat)) {
       allCategories.push(cat);
     }
   });
