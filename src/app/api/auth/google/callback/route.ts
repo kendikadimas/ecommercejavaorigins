@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   const expectedState = req.cookies.get('google_oauth_state')?.value;
 
   if (!code || !state || state !== expectedState) {
-    return NextResponse.redirect(new URL('/login?error=google', req.url));
+    return NextResponse.redirect(new URL('/login?error=google', siteBase(req)));
   }
 
   try {
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
     if (!redirect) redirect = req.cookies.get('google_oauth_redirect')?.value || '/profile';
     redirect = safeRedirect(redirect, '/profile');
 
-    const res = NextResponse.redirect(new URL(redirect, req.url));
+    const res = NextResponse.redirect(new URL(redirect, siteBase(req)));
     res.cookies.set('java_user_session', signPayload(session), {
       ...COOKIE_CONFIG,
       maxAge: 60 * 60 * 24 * 7,
@@ -46,6 +46,14 @@ export async function GET(req: NextRequest) {
     return res;
   } catch (err) {
     console.error('[google-callback] error:', err);
-    return NextResponse.redirect(new URL('/login?error=google', req.url));
+    return NextResponse.redirect(new URL('/login?error=google', siteBase(req)));
   }
+}
+
+// Use the configured runtime site URL as the redirect base (never the Host header),
+// so OAuth callbacks never resolve to localhost in production.
+// Note: this must be a NON-NEXT_PUBLIC_* var — Next.js inlines NEXT_PUBLIC_* at build time,
+// so use SITE_URL (set in cPanel env) which is read at runtime.
+function siteBase(req: NextRequest): string {
+  return process.env.SITE_URL || `${req.nextUrl.protocol}//${req.nextUrl.host}`;
 }

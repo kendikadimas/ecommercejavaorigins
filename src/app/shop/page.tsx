@@ -106,7 +106,10 @@ function ShopInner() {
             Shop All Java Origins Products
           </h1>
           <p className="text-sm text-[#5A4D41] mt-3 max-w-3xl leading-relaxed">
-            Java Origins is an e-commerce platform that connects authentic Indonesian offerings with New Zealand market, including herbal drinks, MSME food and snacks, herbal care, fashion, and handicrafts.
+            Java Origins is an e-commerce platform connecting authentic Indonesian products with the New Zealand market, featuring herbal drinks, MSME food and snacks, and natural herbal care.
+          </p>
+          <p className="text-sm text-[#5A4D41] mt-2 max-w-3xl leading-relaxed">
+            We also introduce inspired modest fashion and offer custom designs through Java Royale Fashion, available at javaroyalefashions.co.nz.
           </p>
         </div>
 

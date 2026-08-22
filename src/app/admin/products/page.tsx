@@ -93,10 +93,17 @@ export default function AdminProductsPage() {
     setEditingCatText('');
   };
 
-  const handleDeleteCategory = (index: number) => {
-    if (!confirm(`Delete category "${categories[index]}"?`)) return;
-    setCategories(categories.filter((_, i) => i !== index));
+  const handleDeleteCategory = async (index: number) => {
+    const name = categories[index];
+    if (!confirm(`Delete category "${name}"? Products in this category will be uncategorized.`)) return;
+    try {
+      await fetch(`/api/products?category=${encodeURIComponent(name)}`, { method: 'DELETE' });
+      setCategories(categories.filter((_, i) => i !== index));
+    } catch {
+      alert('Failed to delete category. Try again.');
+    }
   };
+
 
   const openCreateModal = () => {
     setEditingProduct(null);

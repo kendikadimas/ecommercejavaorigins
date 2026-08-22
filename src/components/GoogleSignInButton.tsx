@@ -3,10 +3,15 @@
 import React from 'react';
 
 // ponytail: full-flow redirect to /api/auth/google (server issues the OAuth redirect + state cookie)
+// Hidden entirely when GOOGLE_CLIENT_ID is not configured (avoids dead button / 500 in prod).
+const GOOGLE_ENABLED = !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
 export const GoogleSignInButton: React.FC<{ label?: string; redirect?: string }> = ({
   label = 'Continue with Google',
   redirect,
 }) => {
+  if (!GOOGLE_ENABLED) return null;
+
   const href = redirect
     ? `/api/auth/google?redirect=${encodeURIComponent(redirect)}`
     : '/api/auth/google';

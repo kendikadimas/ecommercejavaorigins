@@ -496,6 +496,15 @@ export const store = {
     return (res as any).affectedRows > 0;
   },
 
+  async clearCategory(category: string): Promise<number> {
+    const db = await getDb();
+    const [res] = await db.query(
+      "UPDATE products SET category = '' WHERE category = ?",
+      [category]
+    );
+    return (res as any).affectedRows ?? 0;
+  },
+
   // PAYMENT METHODS
   async getPaymentMethods(): Promise<PaymentMethodType[]> {
     const db = await getDb();

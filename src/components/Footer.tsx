@@ -6,7 +6,7 @@ import { Logo } from '@/components/Logo';
 import { Instagram } from 'lucide-react';
 
 export const Footer = () => {
-  const waNumber = '6282130613460';
+  const waNumber = '64212532492';
   const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(
     'Hello Admin Java Origins, I am interested in your herbal products.'
   )}`;
@@ -73,7 +73,24 @@ export const Footer = () => {
                 384 Moutere Highway, Tasman.
               </p>
               <p className="font-mono text-gray-300 hover:text-[#FACC15] transition-colors">
-                <a href="tel:+64212532492">+64212532492</a>
+                <a
+                  href="https://wa.me/64212532492"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  WhatsApp: 0064212532492
+                </a>
+              </p>
+              <p className="leading-relaxed">
+                IG:{' '}
+                <a
+                  href="https://instagram.com/java_origins.nz"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[#FACC15] transition-colors"
+                >
+                  java_origins.nz
+                </a>
               </p>
             </div>
 

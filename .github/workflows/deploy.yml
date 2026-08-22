@@ -1,0 +1,63 @@
+name: Deploy to cPanel
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Create build env (.env not in git)
+        run: |
+          echo "NEXT_PUBLIC_SITE_URL=https://javaorigins.co.nz" > .env
+          echo "NEXT_PUBLIC_ADMIN_WA=${{ vars.NEXT_PUBLIC_ADMIN_WA }}" >> .env
+          echo "NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ vars.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}" >> .env
+          cat .env
+
+      - name: Build
+        run: npm run build
+
+      - name: Package .next
+        run: |
+          cd .next
+          zip -r ../next-deploy.zip server static types BUILD_ID \
+            build-manifest.json app-build-manifest.json \
+            required-server-files.json routes-manifest.json
+        working-directory: .
+
+      - name: Deploy & restart
+        env:
+          SSHPASS: ${{ secrets.SSH_PASS }}
+        run: |
+          sudo apt-get install -y sshpass
+          HOST=${{ secrets.SSH_HOST }}
+          USER=${{ secrets.SSH_USER }}
+          PORT=${{ secrets.SSH_PORT }}
+          APP=${{ secrets.SSH_APP_PATH }}
+          OPTS="-o StrictHostKeyChecking=no -p $PORT"
+
+          # Upload zip
+          sshpass -e scp $OPTS next-deploy.zip $USER@$HOST:$APP/
+
+          # Extract + copy static + restart
+          sshpass -e ssh $OPTS $USER@$HOST "
+            set -e
+            cd $APP
+            unzip -o next-deploy.zip -d .next
+            chmod -R u+rwx .next
+            tar cf - .next/static | (cd ~/public_html/public/_next && tar xf -)
+            rm next-deploy.zip
+            pkill -f 'lsnode:' || true
+          "

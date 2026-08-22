@@ -66,6 +66,11 @@ export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
+    const category = searchParams.get('category');
+    if (category) {
+      const cleared = await store.clearCategory(category);
+      return NextResponse.json({ success: true, cleared });
+    }
     if (!id) {
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
     }

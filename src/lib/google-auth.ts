@@ -17,7 +17,7 @@ export function googleClientId(): string {
 export function googleRedirectUri(): string {
   const configured = process.env.GOOGLE_REDIRECT_URI;
   if (configured) return configured;
-  const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const base = process.env.SITE_URL || 'http://localhost:3000';
   return `${base}/api/auth/google/callback`;
 }
 
