@@ -40,12 +40,12 @@ jobs:
       - name: Deploy & restart
         env:
           SSHPASS: ${{ secrets.SSH_PASS }}
+          HOST: ${{ secrets.SSH_HOST }}
+          USER: ${{ secrets.SSH_USER }}
+          PORT: ${{ secrets.SSH_PORT }}
+          APP: ${{ secrets.SSH_APP_PATH }}
         run: |
           sudo apt-get install -y sshpass
-          HOST=${{ secrets.SSH_HOST }}
-          USER=${{ secrets.SSH_USER }}
-          PORT=${{ secrets.SSH_PORT }}
-          APP=${{ secrets.SSH_APP_PATH }}
           OPTS="-o StrictHostKeyChecking=no -p $PORT"
 
           # Upload zip
