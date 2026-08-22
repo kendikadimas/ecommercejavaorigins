@@ -31,45 +31,52 @@ jobs:
 
       - name: Package .next
         run: |
-          cd .next
-          zip -r ../next-deploy.zip server static types BUILD_ID \
-            build-manifest.json app-build-manifest.json \
-            required-server-files.json routes-manifest.json
-        working-directory: .
+          # server zip — extracted to $APP/ on server, produces .next/
+          zip -r next-deploy.zip .next/server .next/static .next/types \
+            .next/BUILD_ID .next/build-manifest.json \
+            .next/app-build-manifest.json \
+            .next/required-server-files.json .next/routes-manifest.json
 
-      - name: Upload zip via FTP
+          # static zip — extracted to public_html/public/_next/ on server
+          cd .next && zip -r ../next-static.zip static
+
+      - name: Upload zips via FTP
         run: |
-          curl --ftp-create-dirs \
-            -u "${{ secrets.SSH_USER }}:${{ secrets.SSH_PASS }}" \
-            -T next-deploy.zip \
-            "ftp://103.30.147.53${{ secrets.SSH_APP_PATH }}/next-deploy.zip"
+          USER="${{ secrets.SSH_USER }}"
+          PASS="${{ secrets.SSH_PASS }}"
+          APP="${{ secrets.SSH_APP_PATH }}"
+          curl --ftp-create-dirs -u "$USER:$PASS" \
+            -T next-deploy.zip "ftp://103.30.147.53${APP}/next-deploy.zip"
+          curl --ftp-create-dirs -u "$USER:$PASS" \
+            -T next-static.zip "ftp://103.30.147.53/home/$USER/public_html/public/_next/next-static.zip"
 
       - name: Extract & restart via cPanel API
         run: |
           BASE="https://wirogunan.idweb.host:2083"
           AUTH="${{ secrets.SSH_USER }}:${{ secrets.SSH_PASS }}"
           APP="${{ secrets.SSH_APP_PATH }}"
+          USER="${{ secrets.SSH_USER }}"
+          STATIC_DIR="/home/$USER/public_html/public/_next"
 
-          # Extract zip into .next/
+          # Extract server files — zip has .next/ prefix so dest is parent of .next
           curl -sk -u "$AUTH" \
             "$BASE/execute/Fileman/extract_file" \
-            -d "dir=$APP&files=next-deploy.zip&dest=$APP/.next" | jq .
+            -d "dir=$APP&files=next-deploy.zip&dest=$APP" | jq .
 
-          # chmod via API
+          # Extract static files into public/_next/
           curl -sk -u "$AUTH" \
-            "$BASE/execute/Fileman/set_permissions" \
-            -d "path=$APP/.next&permissions=755&recursive=1" | jq .
+            "$BASE/execute/Fileman/extract_file" \
+            -d "dir=$STATIC_DIR&files=next-static.zip&dest=$STATIC_DIR" | jq .
 
-          # Delete zip
-          curl -sk -u "$AUTH" \
-            "$BASE/execute/Fileman/delete_files" \
+          # Delete zips
+          curl -sk -u "$AUTH" "$BASE/execute/Fileman/delete_files" \
             -d "files-0=$APP/next-deploy.zip" | jq .
+          curl -sk -u "$AUTH" "$BASE/execute/Fileman/delete_files" \
+            -d "files-0=$STATIC_DIR/next-static.zip" | jq .
 
-          # Restart Node.js app (stop then start)
-          curl -sk -u "$AUTH" \
-            "$BASE/execute/PassengerApps/stop_app" \
+          # Restart Node.js app
+          curl -sk -u "$AUTH" "$BASE/execute/PassengerApps/stop_app" \
             -d "app=$APP" | jq .
           sleep 3
-          curl -sk -u "$AUTH" \
-            "$BASE/execute/PassengerApps/start_app" \
+          curl -sk -u "$AUTH" "$BASE/execute/PassengerApps/start_app" \
             -d "app=$APP" | jq .
