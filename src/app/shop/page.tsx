@@ -58,7 +58,7 @@ function ShopInner() {
   }, []);
 
   const dbCategories = Array.from(new Set(products.map((p) => p.category)));
-  const allCategories = ['ALL', 'Herbal Drink', 'Food & Snacks', 'Herbal Care', 'Fashion'];
+  const allCategories = ['ALL', 'Herbal Drink', 'Food & Snacks', 'Herbal Care'];
   dbCategories.forEach((cat) => {
     const isMapped =
       cat === 'Herbal Beverage' ||

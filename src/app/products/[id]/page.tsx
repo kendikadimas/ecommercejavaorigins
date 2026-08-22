@@ -22,7 +22,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<ProductType | null>(null);
   const [allProducts, setAllProducts] = useState<ProductType[]>(INITIAL_PRODUCTS);
   const [quantity, setQuantity] = useState(1);
-  const [activeImage, setActiveImage] = useState<string>('');
+
   const [reviews, setReviews] = useState<ReviewType[]>([]);
   const [reviewAvg, setReviewAvg] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
@@ -68,7 +68,6 @@ export default function ProductDetailPage() {
           const found = data.find((p: ProductType) => p.id === id || p.slug === id);
           if (found) {
             setProduct(found);
-            setActiveImage(found.image);
           }
         }
       })
@@ -77,7 +76,6 @@ export default function ProductDetailPage() {
     const initialMatch = INITIAL_PRODUCTS.find((p) => p.id === id || p.slug === id);
     if (initialMatch && !product) {
       setProduct(initialMatch);
-      setActiveImage(initialMatch.image);
     }
   }, [id]);
 
@@ -94,13 +92,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  const mainImage = activeImage || product.image;
-  const thumbnails = [
-    product.image,
-    'https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=400&q=80',
-    'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=400&q=80',
-    'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&w=400&q=80',
-  ];
+  const mainImage = product.image;
 
   const relatedProducts = allProducts.filter((p) => p.id !== product.id).slice(0, 4);
 
@@ -191,27 +183,7 @@ export default function ProductDetailPage() {
               </span>
             </div>
 
-            {/* Thumbnail grid */}
-            <div className="grid grid-cols-4 gap-3">
-              {thumbnails.map((src, idx) => {
-                const isActive = src === mainImage;
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setActiveImage(src)}
-                    className={`relative aspect-square rounded-xl overflow-hidden cursor-pointer transition-all ${
-                      isActive
-                        ? 'border-2 border-[#499A13] opacity-100'
-                        : 'bg-[#F7F7F7] border border-[#E0E0E0] opacity-80 hover:opacity-100'
-                    }`}
-                    aria-label={`Product image ${idx + 1}`}
-                  >
-                    <Image src={src} alt={`Thumbnail ${idx + 1}`} fill className="object-cover" />
-                  </button>
-                );
-              })}
-            </div>
+
           </div>
 
           {/* Right Column: Pricing & Buying Flow */}

@@ -80,9 +80,6 @@ function NavbarInner() {
             <Link href="/shop?cat=Herbal+Care" className={linkCls('/shop?cat=Herbal+Care')}>
               Herbal Care
             </Link>
-            <Link href="/shop?cat=Fashion" className={linkCls('/shop?cat=Fashion')}>
-              Fashion
-            </Link>
             <Link href="/#faq" className={linkCls('/#faq')}>
               FAQs
             </Link>
@@ -200,13 +197,6 @@ function NavbarInner() {
                   className="block py-1 hover:text-[#276F27] font-medium transition-colors"
                 >
                   Herbal Care
-                </Link>
-                <Link
-                  href="/shop?cat=Fashion"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block py-1 hover:text-[#276F27] font-medium transition-colors"
-                >
-                  Fashion
                 </Link>
               </div>
             )}
