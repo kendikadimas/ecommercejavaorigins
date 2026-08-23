@@ -19,65 +19,39 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Create build env (.env not in git)
+      - name: Create build env
         run: |
           echo "NEXT_PUBLIC_SITE_URL=https://javaorigins.co.nz" > .env
           echo "NEXT_PUBLIC_ADMIN_WA=${{ vars.NEXT_PUBLIC_ADMIN_WA }}" >> .env
           echo "NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ vars.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}" >> .env
-          cat .env
 
       - name: Build
         run: npm run build
 
-      - name: Package build
+      - name: Upload .next server files via cPanel API
+        env:
+          CPANEL_HOST: wirogunan.idweb.host
+          CPANEL_USER: ${{ secrets.SSH_USER }}
+          CPANEL_PASS: ${{ secrets.SSH_PASS }}
+          APP_PATH: ${{ secrets.SSH_APP_PATH }}
+        run: node .github/scripts/upload-next.js
+
+      - name: Upload static files via FTP
         run: |
-          # zip without .next/ prefix — server extracts to next_new/ temp dir
           cd .next
-          zip -r ../next-deploy.zip server static types BUILD_ID \
-            build-manifest.json app-build-manifest.json \
-            required-server-files.json routes-manifest.json
+          find static -type f | while read f; do
+            dir=$(dirname "$f")
+            curl -s --ftp-create-dirs \
+              -u "${{ secrets.SSH_USER }}:${{ secrets.SSH_PASS }}" \
+              -T "$f" \
+              "ftp://103.30.147.53/home/${{ secrets.SSH_USER }}/public_html/public/_next/$f"
+          done
 
-      - name: Upload zip via FTP
+      - name: Restart Passenger
         run: |
-          USER="${{ secrets.SSH_USER }}"
-          PASS="${{ secrets.SSH_PASS }}"
-          APP="${{ secrets.SSH_APP_PATH }}"
-          curl --ftp-create-dirs -u "$USER:$PASS" \
-            -T next-deploy.zip "ftp://103.30.147.53${APP}/next-deploy.zip"
-
-      - name: Extract, swap & restart via cPanel API
-        run: |
-          BASE="https://wirogunan.idweb.host:2083"
-          AUTH="${{ secrets.SSH_USER }}:${{ secrets.SSH_PASS }}"
-          APP="${{ secrets.SSH_APP_PATH }}"
-          USER="${{ secrets.SSH_USER }}"
-          STATIC_DIR="/home/$USER/public_html/public/_next"
-
-          # Extract into temp dir next_new (no dot prefix = FTP/cPanel safe)
-          curl -sk -u "$AUTH" "$BASE/execute/Fileman/extract_file" \
-            -d "dir=$APP&files=next-deploy.zip&dest=$APP/next_new" | jq .
-
-          # Delete old backup if exists, rename .next -> next_old
-          curl -sk -u "$AUTH" "$BASE/execute/Fileman/delete_files" \
-            -d "files-0=$APP/next_old" | jq .
-          curl -sk -u "$AUTH" "$BASE/execute/Fileman/rename" \
-            -d "srcfile=$APP/.next&destfile=$APP/next_old" | jq .
-
-          # Rename next_new -> .next (atomic swap)
-          curl -sk -u "$AUTH" "$BASE/execute/Fileman/rename" \
-            -d "srcfile=$APP/next_new&destfile=$APP/.next" | jq .
-
-          # Copy static to public/_next/static (overwrite)
-          curl -sk -u "$AUTH" "$BASE/execute/Fileman/copy_files" \
-            -d "sourcefiles-0=$APP/.next/static&destfiles-0=$STATIC_DIR/static" | jq .
-
-          # Cleanup
-          curl -sk -u "$AUTH" "$BASE/execute/Fileman/delete_files" \
-            -d "files-0=$APP/next-deploy.zip&files-1=$APP/next_old" | jq .
-
-          # Restart Node.js app
-          curl -sk -u "$AUTH" "$BASE/execute/PassengerApps/stop_app" \
-            -d "app=$APP" | jq .
-          sleep 3
-          curl -sk -u "$AUTH" "$BASE/execute/PassengerApps/start_app" \
-            -d "app=$APP" | jq .
+          curl -sk \
+            -u "${{ secrets.SSH_USER }}:${{ secrets.SSH_PASS }}" \
+            "https://wirogunan.idweb.host:2083/execute/Fileman/save_file_content" \
+            --data-urlencode "dir=${{ secrets.SSH_APP_PATH }}/tmp" \
+            --data-urlencode "file=restart.txt" \
+            --data-urlencode "content=$(date +%s)" | jq .status
