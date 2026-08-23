@@ -40,8 +40,7 @@ jobs:
         run: |
           cd .next
           find static -type f | while read f; do
-            dir=$(dirname "$f")
-            curl -s --ftp-create-dirs \
+            curl -s --globoff --ftp-create-dirs \
               -u "${{ secrets.SSH_USER }}:${{ secrets.SSH_PASS }}" \
               -T "$f" \
               "ftp://103.30.147.53/home/${{ secrets.SSH_USER }}/public_html/public/_next/$f"
