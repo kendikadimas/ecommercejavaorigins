@@ -34,7 +34,7 @@ jobs:
           CPANEL_USER: ${{ secrets.SSH_USER }}
           CPANEL_PASS: ${{ secrets.SSH_PASS }}
           APP_PATH: ${{ secrets.SSH_APP_PATH }}
-          STATIC_PATH: /home/${{ secrets.SSH_USER }}/public_html/public/_next/static
+          STATIC_PATH: ${{ secrets.SSH_APP_PATH }}/.next/static
         run: node .github/scripts/upload-next.js
 
       - name: Restart Passenger
