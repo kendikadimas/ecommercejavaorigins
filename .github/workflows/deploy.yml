@@ -28,23 +28,14 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Upload .next server files via cPanel API
+      - name: Upload .next files + static via cPanel API
         env:
           CPANEL_HOST: wirogunan.idweb.host
           CPANEL_USER: ${{ secrets.SSH_USER }}
           CPANEL_PASS: ${{ secrets.SSH_PASS }}
           APP_PATH: ${{ secrets.SSH_APP_PATH }}
+          STATIC_PATH: /home/${{ secrets.SSH_USER }}/public_html/public/_next/static
         run: node .github/scripts/upload-next.js
-
-      - name: Upload static files via FTP
-        run: |
-          cd .next
-          find static -type f | while read f; do
-            curl -s --globoff --ftp-create-dirs \
-              -u "${{ secrets.SSH_USER }}:${{ secrets.SSH_PASS }}" \
-              -T "$f" \
-              "ftp://103.30.147.53/home/${{ secrets.SSH_USER }}/public_html/public/_next/$f"
-          done
 
       - name: Restart Passenger
         run: |

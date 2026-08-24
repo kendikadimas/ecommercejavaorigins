@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-// Uploads .next/server + manifests + BUILD_ID to cPanel via save_file_content API.
-// Secrets passed as env vars: CPANEL_HOST, CPANEL_PORT, CPANEL_USER, CPANEL_PASS, APP_PATH
+// Uploads .next/server + static + manifests + BUILD_ID to cPanel via save_file_content API.
+// Env vars: CPANEL_HOST, CPANEL_PORT, CPANEL_USER, CPANEL_PASS, APP_PATH, STATIC_PATH
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
 
-const { CPANEL_HOST, CPANEL_PORT = '2083', CPANEL_USER, CPANEL_PASS, APP_PATH } = process.env;
-if (!CPANEL_HOST || !CPANEL_USER || !CPANEL_PASS || !APP_PATH) {
-  console.error('Missing env: CPANEL_HOST, CPANEL_USER, CPANEL_PASS, APP_PATH');
+const { CPANEL_HOST, CPANEL_PORT = '2083', CPANEL_USER, CPANEL_PASS, APP_PATH, STATIC_PATH } = process.env;
+if (!CPANEL_HOST || !CPANEL_USER || !CPANEL_PASS || !APP_PATH || !STATIC_PATH) {
+  console.error('Missing env: CPANEL_HOST, CPANEL_USER, CPANEL_PASS, APP_PATH, STATIC_PATH');
   process.exit(1);
 }
 
@@ -43,28 +43,38 @@ function walk(dir, rel, files = []) {
 
 async function main() {
   const nextDir = '.next';
-  const destBase = `${APP_PATH}/.next`;
 
-  // Collect: server dir + top-level manifests + BUILD_ID
-  const files = walk(path.join(nextDir, 'server'), 'server');
+  // Server files + manifests + BUILD_ID → APP_PATH/.next/
+  const serverFiles = walk(path.join(nextDir, 'server'), 'server');
   for (const name of ['BUILD_ID', 'build-manifest.json', 'app-build-manifest.json', 'required-server-files.json', 'routes-manifest.json']) {
     const fp = path.join(nextDir, name);
-    if (fs.existsSync(fp)) files.push({ full: fp, rel: name });
+    if (fs.existsSync(fp)) serverFiles.push({ full: fp, rel: name });
   }
 
-  console.log(`Uploading ${files.length} files to ${destBase}...`);
+  // Static files → STATIC_PATH/ (public dir, not app dir)
+  const staticFiles = walk(path.join(nextDir, 'static'), '');
+
+  const total = serverFiles.length + staticFiles.length;
+  console.log(`Uploading ${serverFiles.length} server files + ${staticFiles.length} static files...`);
   let ok = 0, fail = 0;
-  for (const { full, rel } of files) {
-    const parts = rel.split('/');
-    const file = parts.pop();
-    const dir = destBase + (parts.length ? '/' + parts.join('/') : '');
-    const content = fs.readFileSync(full, 'utf8');
-    try {
-      const r = JSON.parse(await postFile(dir, file, content));
-      if (r.status === 1) { ok++; process.stdout.write('.'); }
-      else { fail++; console.log(`\nFAIL ${rel}: ${JSON.stringify(r.errors)}`); }
-    } catch (e) { fail++; console.log(`\nERR ${rel}: ${e.message}`); }
+
+  async function upload(files, destBase) {
+    for (const { full, rel } of files) {
+      const parts = rel.split('/').filter(Boolean);
+      const file = parts.pop();
+      const dir = destBase + (parts.length ? '/' + parts.join('/') : '');
+      const content = fs.readFileSync(full, 'utf8');
+      try {
+        const r = JSON.parse(await postFile(dir, file, content));
+        if (r.status === 1) { ok++; process.stdout.write('.'); }
+        else { fail++; console.log(`\nFAIL ${rel}: ${JSON.stringify(r.errors)}`); }
+      } catch (e) { fail++; console.log(`\nERR ${rel}: ${e.message}`); }
+    }
   }
+
+  await upload(serverFiles, `${APP_PATH}/.next`);
+  await upload(staticFiles, STATIC_PATH);
+
   console.log(`\nDone: ${ok} ok, ${fail} failed`);
   if (fail > 0) process.exit(1);
 }
