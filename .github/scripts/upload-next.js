@@ -45,16 +45,8 @@ const createdDirs = new Set();
 
 async function ensureDir(dir) {
   if (createdDirs.has(dir)) return;
-  // Ensure all parent dirs exist first (top-down)
-  const parts = dir.split('/').filter(Boolean);
-  let current = '';
-  for (const part of parts) {
-    current += '/' + part;
-    if (!createdDirs.has(current)) {
-      createdDirs.add(current);
-      await cpanelPost('/execute/Fileman/mkdir', { path: current });
-    }
-  }
+  createdDirs.add(dir);
+  try { await cpanelPost('/execute/Fileman/mkdir', { path: dir }); } catch (_) {}
 }
 
 async function uploadFiles(files, destBase, stats) {
@@ -63,11 +55,19 @@ async function uploadFiles(files, destBase, stats) {
     const file = parts.pop();
     const dir = destBase + (parts.length ? '/' + parts.join('/') : '');
     await ensureDir(dir);
-    const content = fs.readFileSync(full, 'utf8');
+    const content = fs.readFileSync(full, 'latin1');
     try {
       const r = JSON.parse(await cpanelPost('/execute/Fileman/save_file_content', { dir, file, content }));
       if (r.status === 1) { stats.ok++; process.stdout.write('.'); }
-      else { stats.fail++; console.log(`\nFAIL ${rel}: ${JSON.stringify(r.errors)}`); }
+      else {
+        const msg = JSON.stringify(r.errors);
+        // "does not exist for the account" = dir doesn't exist yet on server — non-fatal
+        if (msg.includes('does not exist for the account')) {
+          console.log(`\nWARN (dir missing, skipped): ${rel}`);
+        } else {
+          stats.fail++; console.log(`\nFAIL ${rel}: ${msg}`);
+        }
+      }
     } catch (e) { stats.fail++; console.log(`\nERR ${rel}: ${e.message}`); }
   }
 }
