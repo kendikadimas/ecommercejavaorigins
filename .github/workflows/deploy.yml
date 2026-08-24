@@ -37,15 +37,6 @@ jobs:
           STATIC_PATH: ${{ secrets.SSH_APP_PATH }}/.next/static
         run: node .github/scripts/upload-next.js
 
-      - name: Upload public/ assets via FTP
-        run: |
-          find public -type f | while read f; do
-            curl -s --globoff --ftp-create-dirs \
-              -u "${{ secrets.SSH_USER }}:${{ secrets.SSH_PASS }}" \
-              -T "$f" \
-              "ftp://103.30.147.53/home/${{ secrets.SSH_USER }}/javaorigins.co.nz/admin/public_html/$f"
-          done
-
       - name: Restart Passenger
         run: |
           curl -sk \
