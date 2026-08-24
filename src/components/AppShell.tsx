@@ -28,19 +28,19 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
         {/* Root background leaf accents */}
         <div aria-hidden className="pointer-events-none select-none fixed inset-0 z-0 overflow-hidden">
           <CornerLeaf
-            src="/elements/leaf-glossy-twin-pointing-bottom-right.png.png"
+            src="/leaf-glossy-twin-pointing-bottom-right.png.png"
             className="absolute top-6 left-6"
             size={220}
             opacity={0.28}
           />
           <CornerLeaf
-            src="/elements/leaf-monstera-palm-cluster-fan-upward.png.png"
+            src="/leaf-monstera-palm-cluster-fan-upward.png.png"
             className="absolute bottom-6 left-6"
             size={260}
             opacity={0.28}
           />
           <CornerLeaf
-            src="/elements/leaf-palm-frond-pair-pointing-topleft-corner.png"
+            src="/leaf-palm-frond-pair-pointing-topleft-corner.png"
             className="absolute top-24 right-4"
             size={220}
             opacity={0.26}

@@ -88,8 +88,14 @@ async function main() {
   console.log(`Uploading ${serverFiles.length} server files + ${staticFiles.length} static files...`);
   const stats = { ok: 0, fail: 0 };
 
+  // Public assets (images etc) → APP_PATH/public/ — skips uploads/ (user content)
+  const publicFiles = walk('public', '').filter(f => !f.rel.startsWith('uploads/'));
+
+  console.log(`Uploading ${serverFiles.length} server + ${staticFiles.length} static + ${publicFiles.length} public files...`);
+
   await uploadFiles(serverFiles, `${APP_PATH}/.next`, stats);
   await uploadFiles(staticFiles, STATIC_PATH, stats);
+  await uploadFiles(publicFiles, `${APP_PATH}/public`, stats);
 
   console.log(`\nDone: ${stats.ok} ok, ${stats.fail} failed`);
   if (stats.fail > 0) process.exit(1);

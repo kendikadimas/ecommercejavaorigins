@@ -47,13 +47,13 @@ export const IngredientsSection = () => {
   return (
     <section id="ingredients" className="py-20 bg-[#276F27] text-white relative overflow-hidden">
       <CornerLeaf
-        src="/elements/leaf-monstera-palm-cluster-fan-upward.png.png"
+        src="/leaf-monstera-palm-cluster-fan-upward.png.png"
         className="absolute bottom-0 left-0 right-20"
         size={400}
         opacity={0.35}
       />
       <CornerLeaf
-        src="/elements/leaf-monstera-palm-cluster-fan-upward.png.png"
+        src="/leaf-monstera-palm-cluster-fan-upward.png.png"
         className="absolute top-0 right-0"
         size={400}
         opacity={0.3}

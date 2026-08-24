@@ -33,13 +33,13 @@ export const FAQSection = () => {
   return (
     <section id="faq" className="py-20 bg-white text-[#140E0A] border-t border-[#CBE0B4] relative overflow-hidden">
       <CornerLeaf
-        src="/elements/leaf-palm-frond-pair-pointing-topleft-corner.png"
+        src="/leaf-palm-frond-pair-pointing-topleft-corner.png"
         className="absolute top-0 right-0"
         size={300}
         opacity={0.22}
       />
       <CornerLeaf
-        src="/elements/leaf-watercolor-branch-thin-diagonal-bottomleft-to-topright.png"
+        src="/leaf-watercolor-branch-thin-diagonal-bottomleft-to-topright.png"
         className="absolute bottom-0 left-0"
         size={500}
         opacity={0.3}

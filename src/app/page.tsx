@@ -157,13 +157,13 @@ export default function HomePage() {
       {/* "WHAT IS JAVA ORIGINS?" BANNER SECTION */}
       <section className="py-12 sm:py-16 bg-[#276F27] text-white relative border-y border-[#1F5A1F] overflow-hidden">
         <CornerLeaf
-          src="/elements/leaf-palm-frond-pair-pointing-topleft-corner.png"
+          src="/leaf-palm-frond-pair-pointing-topleft-corner.png"
           className="absolute top-0 right-0"
           size={240}
           opacity={0.35}
         />
         <CornerLeaf
-          src="/elements/leaf-watercolor-branch-diagonal-bottomleft-to-topright.png"
+          src="/leaf-watercolor-branch-diagonal-bottomleft-to-topright.png"
           className="absolute bottom-0 left-0"
           size={320}
           opacity={0.3}
