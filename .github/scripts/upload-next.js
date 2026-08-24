@@ -13,12 +13,12 @@ if (!CPANEL_HOST || !CPANEL_USER || !CPANEL_PASS || !APP_PATH || !STATIC_PATH) {
 
 const auth = Buffer.from(`${CPANEL_USER}:${CPANEL_PASS}`).toString('base64');
 
-function postFile(dir, file, content) {
+function cpanelPost(apiPath, params) {
   return new Promise((resolve, reject) => {
-    const body = new URLSearchParams({ dir, file, content }).toString();
+    const body = new URLSearchParams(params).toString();
     const req = https.request({
       hostname: CPANEL_HOST, port: parseInt(CPANEL_PORT),
-      path: '/execute/Fileman/save_file_content', method: 'POST',
+      path: apiPath, method: 'POST',
       rejectUnauthorized: false,
       headers: {
         'Authorization': 'Basic ' + auth,
@@ -41,6 +41,29 @@ function walk(dir, rel, files = []) {
   return files;
 }
 
+const createdDirs = new Set();
+
+async function ensureDir(dir) {
+  if (createdDirs.has(dir)) return;
+  createdDirs.add(dir);
+  await cpanelPost('/execute/Fileman/mkdir', { path: dir });
+}
+
+async function uploadFiles(files, destBase, stats) {
+  for (const { full, rel } of files) {
+    const parts = rel.split('/').filter(Boolean);
+    const file = parts.pop();
+    const dir = destBase + (parts.length ? '/' + parts.join('/') : '');
+    await ensureDir(dir);
+    const content = fs.readFileSync(full, 'utf8');
+    try {
+      const r = JSON.parse(await cpanelPost('/execute/Fileman/save_file_content', { dir, file, content }));
+      if (r.status === 1) { stats.ok++; process.stdout.write('.'); }
+      else { stats.fail++; console.log(`\nFAIL ${rel}: ${JSON.stringify(r.errors)}`); }
+    } catch (e) { stats.fail++; console.log(`\nERR ${rel}: ${e.message}`); }
+  }
+}
+
 async function main() {
   const nextDir = '.next';
 
@@ -54,29 +77,14 @@ async function main() {
   // Static files → STATIC_PATH/ (public dir, not app dir)
   const staticFiles = walk(path.join(nextDir, 'static'), '');
 
-  const total = serverFiles.length + staticFiles.length;
   console.log(`Uploading ${serverFiles.length} server files + ${staticFiles.length} static files...`);
-  let ok = 0, fail = 0;
+  const stats = { ok: 0, fail: 0 };
 
-  async function upload(files, destBase) {
-    for (const { full, rel } of files) {
-      const parts = rel.split('/').filter(Boolean);
-      const file = parts.pop();
-      const dir = destBase + (parts.length ? '/' + parts.join('/') : '');
-      const content = fs.readFileSync(full, 'utf8');
-      try {
-        const r = JSON.parse(await postFile(dir, file, content));
-        if (r.status === 1) { ok++; process.stdout.write('.'); }
-        else { fail++; console.log(`\nFAIL ${rel}: ${JSON.stringify(r.errors)}`); }
-      } catch (e) { fail++; console.log(`\nERR ${rel}: ${e.message}`); }
-    }
-  }
+  await uploadFiles(serverFiles, `${APP_PATH}/.next`, stats);
+  await uploadFiles(staticFiles, STATIC_PATH, stats);
 
-  await upload(serverFiles, `${APP_PATH}/.next`);
-  await upload(staticFiles, STATIC_PATH);
-
-  console.log(`\nDone: ${ok} ok, ${fail} failed`);
-  if (fail > 0) process.exit(1);
+  console.log(`\nDone: ${stats.ok} ok, ${stats.fail} failed`);
+  if (stats.fail > 0) process.exit(1);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });
