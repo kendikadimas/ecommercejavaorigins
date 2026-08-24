@@ -45,8 +45,16 @@ const createdDirs = new Set();
 
 async function ensureDir(dir) {
   if (createdDirs.has(dir)) return;
-  createdDirs.add(dir);
-  await cpanelPost('/execute/Fileman/mkdir', { path: dir });
+  // Ensure all parent dirs exist first (top-down)
+  const parts = dir.split('/').filter(Boolean);
+  let current = '';
+  for (const part of parts) {
+    current += '/' + part;
+    if (!createdDirs.has(current)) {
+      createdDirs.add(current);
+      await cpanelPost('/execute/Fileman/mkdir', { path: current });
+    }
+  }
 }
 
 async function uploadFiles(files, destBase, stats) {
