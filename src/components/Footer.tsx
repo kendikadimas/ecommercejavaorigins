@@ -153,9 +153,9 @@ export const Footer = () => {
           <p>© 2026 Pure Zealand. All rights reserved.</p>
           <div className="flex items-center space-x-4 text-[11px] text-gray-400">
             <span>Made in Indonesia</span>
-            <span>•</span>
+            <span>&bull;</span>
             <span>BPOM RI Certified</span>
-            <span>•</span>
+            <span>&bull;</span>
             <span>Halal MUI</span>
           </div>
         </div>
