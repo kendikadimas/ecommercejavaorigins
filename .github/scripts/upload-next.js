@@ -42,7 +42,7 @@ async function login() {
 }
 
 function cpanelPost(apiPath, params) {
-  const body = new URLSearchParams(params).toString();
+  const body = typeof params === 'string' ? params : new URLSearchParams(params).toString();
   return httpPost(`/${SESSION_ID}${apiPath}`, body, { 'Cookie': 'cpsession=' + SESSION_VAL })
     .then(r => r.body);
 }
@@ -76,19 +76,50 @@ async function uploadFiles(files, destBase, stats) {
     const isBinary = /\.(png|jpg|jpeg|gif|ico|webp|woff|woff2|ttf|eot|otf)$/i.test(file);
     let content;
     if (isBinary) {
-      content = fs.readFileSync(full, 'latin1');
+      // For binary files, read as Buffer and encode each byte as %XX manually
+      // URLSearchParams would double-encode bytes > 127 as UTF-8, corrupting binary
+      const buf = fs.readFileSync(full);
+      content = buf.toString('latin1');
     } else {
-      // Read as UTF-8, escape all non-ASCII to \uXXXX so latin1 transport is safe
-      const utf8 = fs.readFileSync(full, 'utf8');
-      content = utf8.replace(/[^\x00-\x7F]/g, c => {
+      // Read as Buffer, decode as UTF-8, escape only non-ASCII literal chars
+      // This avoids double-escaping existing \uXXXX sequences in compiled JS
+      const buf = fs.readFileSync(full);
+      const str = buf.toString('utf8');
+      // Only escape chars that are actual Unicode codepoints > 127 in the string
+      // (not escape sequences like \u0041 which are already ASCII)
+      content = str.replace(/[^\x00-\x7F]/g, c => {
         const code = c.codePointAt(0);
-        return code > 0xFFFF
-          ? `\\u${((code - 0x10000) >> 10 | 0xD800).toString(16).padStart(4,'0')}\\u${((code - 0x10000) & 0x3FF | 0xDC00).toString(16).padStart(4,'0')}`
-          : `\\u${code.toString(16).padStart(4,'0')}`;
+        if (code > 0xFFFF) {
+          const hi = ((code - 0x10000) >> 10) + 0xD800;
+          const lo = ((code - 0x10000) & 0x3FF) + 0xDC00;
+          return `\\u${hi.toString(16).padStart(4,'0')}\\u${lo.toString(16).padStart(4,'0')}`;
+        }
+        return `\\u${code.toString(16).padStart(4,'0')}`;
       });
     }
+
+    // Build form body manually to control encoding of binary content
+    // URLSearchParams encodes bytes > 127 as UTF-8 multi-byte sequences,
+    // which corrupts binary files. We percent-encode each byte as %XX instead.
+    function pctEncode(s) {
+      let out = '';
+      for (let i = 0; i < s.length; i++) {
+        const c = s.charCodeAt(i);
+        if ((c >= 0x41 && c <= 0x5A) || (c >= 0x61 && c <= 0x7A) ||
+            (c >= 0x30 && c <= 0x39) || c === 0x2D || c === 0x5F || c === 0x2E || c === 0x7E) {
+          out += s[i];
+        } else if (c === 0x20) {
+          out += '+';
+        } else {
+          out += '%' + c.toString(16).padStart(2, '0').toUpperCase();
+        }
+      }
+      return out;
+    }
     try {
-      const r = JSON.parse(await cpanelPost('/execute/Fileman/save_file_content', { dir, file, content }));
+      // Use manual percent-encoding for the body to preserve binary bytes correctly
+      const body = `dir=${pctEncode(dir)}&file=${pctEncode(file)}&content=${pctEncode(content)}`;
+      const r = JSON.parse(await cpanelPost('/execute/Fileman/save_file_content', body));
       if (r.status === 1) { stats.ok++; process.stdout.write('.'); }
       else {
         const msg = JSON.stringify(r.errors);
@@ -121,8 +152,11 @@ async function main() {
   console.log(`Uploading ${serverFiles.length} server files + ${staticFiles.length} static files...`);
   const stats = { ok: 0, fail: 0 };
 
-  // Public assets (images etc) → APP_PATH/public/ — skips uploads/ (user content)
-  const publicFiles = walk('public', '').filter(f => !f.rel.startsWith('uploads/'));
+  // Public assets → APP_PATH/public/ — skips uploads/ (user content) and binary files
+  const publicFiles = walk('public', '').filter(f =>
+    !f.rel.startsWith('uploads/') &&
+    !/\.(png|jpg|jpeg|gif|ico|webp|woff|woff2|ttf|eot|otf|svg)$/i.test(f.rel)
+  );
 
   console.log(`Uploading ${serverFiles.length} server + ${staticFiles.length} static + ${publicFiles.length} public files...`);
 

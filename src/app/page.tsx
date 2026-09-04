@@ -214,7 +214,7 @@ export default function HomePage() {
               <div className="lg:col-span-6 relative">
                 <div className="relative aspect-video sm:aspect-square rounded-2xl overflow-hidden border border-[#CBE0B4] shadow-sm">
                   <Image
-                    src="/nature/product.jpeg"
+                    src="https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=800&q=80"
                     alt="Java Origins Drink Showcase"
                     fill
                     className="object-cover"
