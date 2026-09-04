@@ -11,24 +11,40 @@ if (!CPANEL_HOST || !CPANEL_USER || !CPANEL_PASS || !APP_PATH || !STATIC_PATH) {
   process.exit(1);
 }
 
-const auth = Buffer.from(`${CPANEL_USER}:${CPANEL_PASS}`).toString('base64');
+let SESSION_ID = '';
+let SESSION_VAL = '';
 
-function cpanelPost(apiPath, params) {
+function httpPost(path, body, extraHeaders = {}) {
   return new Promise((resolve, reject) => {
-    const body = new URLSearchParams(params).toString();
     const req = https.request({
       hostname: CPANEL_HOST, port: parseInt(CPANEL_PORT),
-      path: apiPath, method: 'POST',
-      rejectUnauthorized: false,
+      path, method: 'POST', rejectUnauthorized: false,
       headers: {
-        'Authorization': 'Basic ' + auth,
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Content-Length': Buffer.byteLength(body)
+        'Content-Length': Buffer.byteLength(body),
+        ...extraHeaders
       }
-    }, res => { let d = ''; res.on('data', c => d += c); res.on('end', () => resolve(d)); });
+    }, res => { let d = ''; res.on('data', c => d += c); res.on('end', () => resolve({ body: d, headers: res.headers })); });
     req.on('error', reject);
     req.write(body); req.end();
   });
+}
+
+async function login() {
+  const body = `user=${encodeURIComponent(CPANEL_USER)}&pass=${encodeURIComponent(CPANEL_PASS)}&goto_uri=/`;
+  const { headers } = await httpPost('/login/', body);
+  const loc = headers['location'] || '';
+  const cookie = (headers['set-cookie'] || []).find(c => c.startsWith('cpsession=')) || '';
+  SESSION_ID = (loc.match(/\/(cpsess\d+)\//) || [])[1] || '';
+  SESSION_VAL = (cookie.match(/cpsession=([^;]+)/) || [])[1] || '';
+  if (!SESSION_ID || !SESSION_VAL) throw new Error('cPanel login failed — check credentials');
+  console.log('Logged in, session:', SESSION_ID);
+}
+
+function cpanelPost(apiPath, params) {
+  const body = new URLSearchParams(params).toString();
+  return httpPost(`/${SESSION_ID}${apiPath}`, body, { 'Cookie': 'cpsession=' + SESSION_VAL })
+    .then(r => r.body);
 }
 
 function walk(dir, rel, files = []) {
@@ -48,6 +64,8 @@ async function ensureDir(dir) {
   createdDirs.add(dir);
   try { await cpanelPost('/execute/Fileman/mkdir', { path: dir }); } catch (_) {}
 }
+
+const delay = ms => new Promise(r => setTimeout(r, ms));
 
 async function uploadFiles(files, destBase, stats) {
   for (const { full, rel } of files) {
@@ -69,10 +87,12 @@ async function uploadFiles(files, destBase, stats) {
         }
       }
     } catch (e) { stats.fail++; console.log(`\nERR ${rel}: ${e.message}`); }
+    await delay(200);
   }
 }
 
 async function main() {
+  await login();
   const nextDir = '.next';
 
   // Server files + manifests + BUILD_ID → APP_PATH/.next/
