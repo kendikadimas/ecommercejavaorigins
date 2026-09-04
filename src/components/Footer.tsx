@@ -23,7 +23,7 @@ export const Footer = () => {
             <Logo variant="light" />
 
             <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-light max-w-md">
-              Certified under Indonesian Food Safety Standards (BPOM & PIRT) • Halal Certified • Ready for Export Markets
+              Certified under Indonesian Food Safety Standards (BPOM &amp; PIRT) | Halal Certified | Ready for Export Markets
             </p>
 
             <p className="text-xs text-gray-500 font-medium">
@@ -150,12 +150,12 @@ export const Footer = () => {
       {/* Bottom Copyright Bar */}
       <div className="bg-[#0A0705] border-t border-white/5 py-6 px-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 space-y-3 sm:space-y-0">
-          <p>© 2026 Pure Zealand. All rights reserved.</p>
+          <p>(c) 2026 Pure Zealand. All rights reserved.</p>
           <div className="flex items-center space-x-4 text-[11px] text-gray-400">
             <span>Made in Indonesia</span>
-            <span>&bull;</span>
+            <span>|</span>
             <span>BPOM RI Certified</span>
-            <span>&bull;</span>
+            <span>|</span>
             <span>Halal MUI</span>
           </div>
         </div>

@@ -73,7 +73,20 @@ async function uploadFiles(files, destBase, stats) {
     const file = parts.pop();
     const dir = destBase + (parts.length ? '/' + parts.join('/') : '');
     await ensureDir(dir);
-    const content = fs.readFileSync(full, 'latin1');
+    const isBinary = /\.(png|jpg|jpeg|gif|ico|webp|woff|woff2|ttf|eot|otf)$/i.test(file);
+    let content;
+    if (isBinary) {
+      content = fs.readFileSync(full, 'latin1');
+    } else {
+      // Read as UTF-8, escape all non-ASCII to \uXXXX so latin1 transport is safe
+      const utf8 = fs.readFileSync(full, 'utf8');
+      content = utf8.replace(/[^\x00-\x7F]/g, c => {
+        const code = c.codePointAt(0);
+        return code > 0xFFFF
+          ? `\\u${((code - 0x10000) >> 10 | 0xD800).toString(16).padStart(4,'0')}\\u${((code - 0x10000) & 0x3FF | 0xDC00).toString(16).padStart(4,'0')}`
+          : `\\u${code.toString(16).padStart(4,'0')}`;
+      });
+    }
     try {
       const r = JSON.parse(await cpanelPost('/execute/Fileman/save_file_content', { dir, file, content }));
       if (r.status === 1) { stats.ok++; process.stdout.write('.'); }
