@@ -67,6 +67,34 @@ async function ensureDir(dir) {
 
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
+// Multipart upload for binary files — same endpoint the File Manager UI uses.
+// Content-Length must be computed on the raw Buffer to avoid byte-length mismatch.
+function uploadMultipart(dir, filename, buf) {
+  return new Promise((resolve, reject) => {
+    const boundary = '----NodeUpload' + Date.now();
+    const parts = [
+      Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="dir"\r\n\r\n${dir}\r\n`),
+      Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="overwrite"\r\n\r\n1\r\n`),
+      Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file-1"; filename="${filename}"\r\nContent-Type: application/octet-stream\r\n\r\n`),
+      buf,
+      Buffer.from(`\r\n--${boundary}--\r\n`)
+    ];
+    const body = Buffer.concat(parts);
+    const req = https.request({
+      hostname: CPANEL_HOST, port: parseInt(CPANEL_PORT),
+      path: `/${SESSION_ID}/execute/Fileman/upload_files`,
+      method: 'POST', rejectUnauthorized: false,
+      headers: {
+        'Content-Type': 'multipart/form-data; boundary=' + boundary,
+        'Content-Length': body.length,
+        'Cookie': 'cpsession=' + SESSION_VAL
+      }
+    }, res => { let d = ''; res.on('data', c => d += c); res.on('end', () => resolve(d)); });
+    req.on('error', reject);
+    req.write(body); req.end();
+  });
+}
+
 async function uploadFiles(files, destBase, stats) {
   for (const { full, rel } of files) {
     const parts = rel.split('/').filter(Boolean);
@@ -74,52 +102,28 @@ async function uploadFiles(files, destBase, stats) {
     const dir = destBase + (parts.length ? '/' + parts.join('/') : '');
     await ensureDir(dir);
     const isBinary = /\.(png|jpg|jpeg|gif|ico|webp|woff|woff2|ttf|eot|otf)$/i.test(file);
-    let content;
-    if (isBinary) {
-      // For binary files, read as Buffer and encode each byte as %XX manually
-      // URLSearchParams would double-encode bytes > 127 as UTF-8, corrupting binary
-      const buf = fs.readFileSync(full);
-      content = buf.toString('latin1');
-    } else {
-      // Read as Buffer, decode as UTF-8, escape only non-ASCII literal chars
-      // This avoids double-escaping existing \uXXXX sequences in compiled JS
-      const buf = fs.readFileSync(full);
-      const str = buf.toString('utf8');
-      // Only escape chars that are actual Unicode codepoints > 127 in the string
-      // (not escape sequences like \u0041 which are already ASCII)
-      content = str.replace(/[^\x00-\x7F]/g, c => {
-        const code = c.codePointAt(0);
-        if (code > 0xFFFF) {
-          const hi = ((code - 0x10000) >> 10) + 0xD800;
-          const lo = ((code - 0x10000) & 0x3FF) + 0xDC00;
-          return `\\u${hi.toString(16).padStart(4,'0')}\\u${lo.toString(16).padStart(4,'0')}`;
-        }
-        return `\\u${code.toString(16).padStart(4,'0')}`;
-      });
-    }
-
-    // Build form body manually to control encoding of binary content
-    // URLSearchParams encodes bytes > 127 as UTF-8 multi-byte sequences,
-    // which corrupts binary files. We percent-encode each byte as %XX instead.
-    function pctEncode(s) {
-      let out = '';
-      for (let i = 0; i < s.length; i++) {
-        const c = s.charCodeAt(i);
-        if ((c >= 0x41 && c <= 0x5A) || (c >= 0x61 && c <= 0x7A) ||
-            (c >= 0x30 && c <= 0x39) || c === 0x2D || c === 0x5F || c === 0x2E || c === 0x7E) {
-          out += s[i];
-        } else if (c === 0x20) {
-          out += '+';
-        } else {
-          out += '%' + c.toString(16).padStart(2, '0').toUpperCase();
-        }
-      }
-      return out;
-    }
     try {
-      // Use manual percent-encoding for the body to preserve binary bytes correctly
-      const body = `dir=${pctEncode(dir)}&file=${pctEncode(file)}&content=${pctEncode(content)}`;
-      const r = JSON.parse(await cpanelPost('/execute/Fileman/save_file_content', body));
+      let r;
+      if (isBinary) {
+        // Binary files MUST use multipart upload — save_file_content corrupts
+        // bytes > 127 because it re-encodes latin1 chars as UTF-8 on the server
+        r = JSON.parse(await uploadMultipart(dir, file, fs.readFileSync(full)));
+      } else {
+        // Text files: read as UTF-8, escape all non-ASCII to \uXXXX so the
+        // form-encoded transport is 100% ASCII (server decodes it as UTF-8)
+        const buf = fs.readFileSync(full);
+        const str = buf.toString('utf8');
+        const content = str.replace(/[^\x00-\x7F]/g, c => {
+          const code = c.codePointAt(0);
+          if (code > 0xFFFF) {
+            const hi = ((code - 0x10000) >> 10) + 0xD800;
+            const lo = ((code - 0x10000) & 0x3FF) + 0xDC00;
+            return `\\u${hi.toString(16).padStart(4,'0')}\\u${lo.toString(16).padStart(4,'0')}`;
+          }
+          return `\\u${code.toString(16).padStart(4,'0')}`;
+        });
+        r = JSON.parse(await cpanelPost('/execute/Fileman/save_file_content', { dir, file, content }));
+      }
       if (r.status === 1) { stats.ok++; process.stdout.write('.'); }
       else {
         const msg = JSON.stringify(r.errors);
@@ -152,11 +156,8 @@ async function main() {
   console.log(`Uploading ${serverFiles.length} server files + ${staticFiles.length} static files...`);
   const stats = { ok: 0, fail: 0 };
 
-  // Public assets → APP_PATH/public/ — skips uploads/ (user content) and binary files
-  const publicFiles = walk('public', '').filter(f =>
-    !f.rel.startsWith('uploads/') &&
-    !/\.(png|jpg|jpeg|gif|ico|webp|woff|woff2|ttf|eot|otf|svg)$/i.test(f.rel)
-  );
+  // Public assets → APP_PATH/public/ — skips uploads/ (user content)
+  const publicFiles = walk('public', '').filter(f => !f.rel.startsWith('uploads/'));
 
   console.log(`Uploading ${serverFiles.length} server + ${staticFiles.length} static + ${publicFiles.length} public files...`);
 
