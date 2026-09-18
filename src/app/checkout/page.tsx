@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CreditCard, MessageSquare, ArrowRight, CheckCircle2, QrCode, Building2, UserCheck, AlertCircle, LogIn, UserPlus } from 'lucide-react';
+import { CreditCard, MessageSquare, ArrowRight, CheckCircle2, QrCode, Building2, UserCheck, AlertCircle, ShieldCheck } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { PaymentMethodType, INITIAL_PAYMENT_METHODS } from '@/lib/seed-data';
 import { formatPrice } from '@/lib/format';
@@ -40,10 +40,14 @@ export default function CheckoutPage() {
     notes: '',
   });
 
+  // Email confirmation guard — email is the only key to the order history,
+  // so a typo here means the customer loses their tracking link for good.
+  const [emailConfirm, setEmailConfirm] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Pre-fill user data when user is logged in
+  // Pre-fill user data when user is logged in (optional — checkout works as guest)
   useEffect(() => {
     if (user) {
       setForm((prev) => ({
@@ -55,15 +59,9 @@ export default function CheckoutPage() {
         city: user.city || prev.city || 'Auckland',
         postalCode: user.postalCode || prev.postalCode,
       }));
+      setEmailConfirm((prev) => prev || user.email || '');
     }
   }, [user]);
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace('/login?redirect=/checkout');
-    }
-  }, [authLoading, user, router]);
 
   useEffect(() => {
     fetch('/api/payment-methods')
@@ -109,14 +107,21 @@ export default function CheckoutPage() {
       }, 50);
     };
 
-    if (!user) {
-      setError('You must register or log in to your account before placing an order.');
+    if (!form.customerName || !form.customerPhone || !form.address) {
+      setError('Please complete Name, Phone/WhatsApp Number, and Full Address.');
       scrollToError();
       return;
     }
 
-    if (!form.customerName || !form.customerPhone || !form.address) {
-      setError('Please complete Name, Phone/WhatsApp Number, and Full Address.');
+    const email = (form.customerEmail || user?.email || '').trim().toLowerCase();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError('Please enter a valid email address — it is used to track your order.');
+      scrollToError();
+      return;
+    }
+
+    if (email !== emailConfirm.trim().toLowerCase()) {
+      setError('Email addresses do not match. Please check and try again.');
       scrollToError();
       return;
     }
@@ -131,7 +136,7 @@ export default function CheckoutPage() {
 
     const payload = {
       customerName: form.customerName,
-      customerEmail: form.customerEmail || user.email,
+      customerEmail: email,
       customerPhone: form.customerPhone,
       address: form.address,
       city: form.city,
@@ -172,7 +177,7 @@ export default function CheckoutPage() {
           .join('\n');
 
         const serverTotal = Number(orderData.totalAmount ?? totalAmount);
-        const message = `*HELLO JAVA ORIGINS ADMIN!*\nI would like to place an order via WhatsApp.\n\n*Order ID:* ${orderData.orderNumber}\n*Customer Name:* ${form.customerName}\n*Email:* ${form.customerEmail}\n*Phone Number:* ${form.customerPhone}\n*Address:* ${form.address}, ${form.city} (${form.postalCode})\n\n*Product List:*\n${itemListText}\n\n*Shipping:* ${SHIPPING_OPTIONS.find((o) => o.id === shippingId)?.label} (${formatPrice(shipCost)})\n*Total Payment:* ${formatPrice(serverTotal)}\n*Notes:* ${form.notes || '-'}\n\nPlease help to process this order, thank you!`;
+        const message = `*HELLO JAVA ORIGINS ADMIN!*\nI would like to place an order via WhatsApp.\n\n*Order ID:* ${orderData.orderNumber}\n*Customer Name:* ${form.customerName}\n*Email:* ${email}\n*Phone Number:* ${form.customerPhone}\n*Address:* ${form.address}, ${form.city} (${form.postalCode})\n\n*Product List:*\n${itemListText}\n\n*Shipping:* ${SHIPPING_OPTIONS.find((o) => o.id === shippingId)?.label} (${formatPrice(shipCost)})\n*Total Payment:* ${formatPrice(serverTotal)}\n*Notes:* ${form.notes || '-'}\n\nPlease help to process this order, thank you!`;
 
         const waUrl = `https://wa.me/${adminWa}?text=${encodeURIComponent(message)}`;
         // open WhatsApp in a new tab, then show the order page so the customer can
@@ -205,36 +210,24 @@ export default function CheckoutPage() {
           </h1>
         </div>
 
-        {/* Mandatory User Authentication Check Banner */}
+        {/* Guest checkout notice — no account required */}
         {!user && !authLoading && (
-          <div className="mb-8 p-6 bg-amber-50 border-2 border-amber-300 rounded-2xl shadow-sm space-y-4">
+          <div className="mb-8 p-5 bg-[#F3F7ED] border border-[#499A13]/40 rounded-2xl shadow-sm">
             <div className="flex items-start space-x-3">
-              <AlertCircle size={24} className="text-amber-700 flex-shrink-0 mt-0.5" />
+              <ShieldCheck size={22} className="text-[#276F27] flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="text-base font-extrabold text-amber-900">
-                  Must Login / Create Account Before Ordering
+                <h3 className="text-sm font-extrabold text-[#22491F]">
+                  No Account Needed — Checkout as Guest
                 </h3>
-                <p className="text-xs text-amber-800 font-normal mt-1">
-                  You must create an account or log in first to place an order, edit your profile, and monitor order status with email notifications.
+                <p className="text-xs text-[#44663A] font-normal mt-1 leading-relaxed">
+                  Just fill in your details below to place an order. We&apos;ll email you a tracking link
+                  so you can follow your order anytime. You can also{' '}
+                  <Link href="/login?redirect=/checkout" className="font-bold text-[#276F27] underline underline-offset-2">
+                    log in
+                  </Link>{' '}
+                  if you already have an account to auto-fill your details.
                 </p>
               </div>
-            </div>
-
-            <div className="flex flex-wrap gap-3 pt-2">
-              <Link
-                href="/login?redirect=/checkout"
-                className="px-5 py-2.5 bg-[#276F27] hover:bg-[#276F27] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow flex items-center space-x-1.5"
-              >
-                <LogIn size={16} />
-                <span>Login to Your Account</span>
-              </Link>
-              <Link
-                href="/register?redirect=/checkout"
-                className="px-5 py-2.5 bg-white border border-[#C9D3BE] text-[#26421F] hover:bg-[#F2F7E9] font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-xs flex items-center space-x-1.5"
-              >
-                <UserPlus size={16} />
-                <span>Register New Account</span>
-              </Link>
             </div>
           </div>
         )}
@@ -244,7 +237,7 @@ export default function CheckoutPage() {
           <div className="mb-6 p-4 bg-emerald-50 border border-emerald-300 rounded-xl flex items-center justify-between text-xs">
             <div className="flex items-center space-x-2 text-emerald-900 font-bold">
               <UserCheck size={18} className="text-emerald-700" />
-              <span>Authenticated as: {user.name} ({user.email})</span>
+              <span>Signed in as: {user.name} ({user.email})</span>
             </div>
             <Link href="/profile" className="text-[#276F27] font-bold hover:underline">
               Edit Profile / Address
@@ -344,18 +337,44 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-[#22491F] mb-1">Email (Order Status Notification)</label>
-                  <input
-                    type="email"
-                    name="customerEmail"
-                    required
-                    placeholder="john@example.com"
-                    value={form.customerEmail}
-                    onChange={handleTextChange}
-                    className="w-full px-4 py-2.5 rounded-xl border border-[#CBE0B4] bg-[#FAFAF7] text-sm focus:outline-none focus:border-[#499A13] font-normal"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#22491F] mb-1">Email *</label>
+                    <input
+                      type="email"
+                      name="customerEmail"
+                      required
+                      placeholder="john@example.com"
+                      value={form.customerEmail}
+                      onChange={handleTextChange}
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#CBE0B4] bg-[#FAFAF7] text-sm focus:outline-none focus:border-[#499A13] font-normal"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#22491F] mb-1">Confirm Email *</label>
+                    <input
+                      type="email"
+                      name="emailConfirm"
+                      required
+                      placeholder="Re-type your email"
+                      value={emailConfirm}
+                      onChange={(e) => setEmailConfirm(e.target.value)}
+                      className={`w-full px-4 py-2.5 rounded-xl border bg-[#FAFAF7] text-sm focus:outline-none font-normal ${
+                        emailConfirm && emailConfirm.trim().toLowerCase() !== form.customerEmail.trim().toLowerCase()
+                          ? 'border-red-400 focus:border-red-500'
+                          : 'border-[#CBE0B4] focus:border-[#499A13]'
+                      }`}
+                    />
+                    {emailConfirm && emailConfirm.trim().toLowerCase() !== form.customerEmail.trim().toLowerCase() && (
+                      <p className="text-[11px] text-red-600 font-semibold mt-1">Email addresses do not match.</p>
+                    )}
+                  </div>
                 </div>
+
+                <p className="text-[11px] text-[#5A7543] font-normal -mt-1">
+                  We&apos;ll send your order confirmation and tracking link to this email. Please double-check it.
+                </p>
 
                 <div>
                   <label className="block text-xs font-semibold text-[#22491F] mb-1">Full Shipping Address *</label>
@@ -478,44 +497,34 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* Submit Action */}
+              {/* Submit Action — guest checkout, no login required */}
               <div className="pt-4">
-                {user ? (
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className={`w-full py-4 px-6 rounded-xl font-extrabold text-sm uppercase tracking-wider transition-all shadow-xl flex items-center justify-center space-x-2 ${
-                      checkoutFlow === 'WHATSAPP'
-                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                        : 'bg-[#140E0A] hover:bg-[#EAB308] hover:text-[#140E0A] text-[#FACC15]'
-                    }`}
-                  >
-                    {loading ? (
-                      <span className="flex items-center justify-center space-x-2">
-                        <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        <span>Processing Order...</span>
-                      </span>
-                    ) : checkoutFlow === 'WHATSAPP' ? (
-                      <>
-                        <MessageSquare size={18} />
-                        <span>Checkout via WhatsApp Now</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>Create Order & Upload Proof of Payment</span>
-                        <ArrowRight size={18} />
-                      </>
-                    )}
-                  </button>
-                ) : (
-                  <Link
-                    href="/login?redirect=/checkout"
-                    className="w-full py-4 px-6 rounded-xl font-extrabold text-sm uppercase tracking-wider transition-all shadow-xl flex items-center justify-center space-x-2 bg-amber-500 hover:bg-amber-600 text-white"
-                  >
-                    <LogIn size={18} />
-                    <span>Log In to Your Account to Checkout</span>
-                  </Link>
-                )}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`w-full py-4 px-6 rounded-xl font-extrabold text-sm uppercase tracking-wider transition-all shadow-xl flex items-center justify-center space-x-2 ${
+                    checkoutFlow === 'WHATSAPP'
+                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                      : 'bg-[#140E0A] hover:bg-[#EAB308] hover:text-[#140E0A] text-[#FACC15]'
+                  }`}
+                >
+                  {loading ? (
+                    <span className="flex items-center justify-center space-x-2">
+                      <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      <span>Processing Order...</span>
+                    </span>
+                  ) : checkoutFlow === 'WHATSAPP' ? (
+                    <>
+                      <MessageSquare size={18} />
+                      <span>Checkout via WhatsApp Now</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Create Order &amp; Upload Proof of Payment</span>
+                      <ArrowRight size={18} />
+                    </>
+                  )}
+                </button>
               </div>
             </form>
 

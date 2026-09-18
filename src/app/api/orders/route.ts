@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { store } from '@/lib/store';
 import { getAdminSession, getUserSession } from '@/lib/auth';
 import { SHIPPING_OPTIONS, shippingCost } from '@/lib/shipping';
-import { isRateLimited, LIMITS } from '@/lib/rate-limit';
+import { isRateLimited, isRateLimitedByIdentifier, isValidEmail, LIMITS } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -70,6 +70,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: 'Order email must match your account email' },
         { status: 400 }
+      );
+    }
+
+    // Guest checkout has no account, so validate the email and cap orders per email.
+    // The email is the only key to the order history — garbage here loses the order.
+    if (!customerEmail || !isValidEmail(customerEmail)) {
+      return NextResponse.json(
+        { error: 'A valid email address is required to place an order' },
+        { status: 400 }
+      );
+    }
+    if (isRateLimitedByIdentifier(customerEmail, 'order_email', LIMITS.ORDER_EMAIL)) {
+      return NextResponse.json(
+        { error: 'Too many orders for this email. Please try again later.' },
+        { status: 429 }
       );
     }
 

@@ -34,6 +34,28 @@ export function isRateLimited(req: NextRequest, key: string, cfg: RateLimitConfi
   return bucket.count > cfg.limit;
 }
 
+/**
+ * Rate limit by an arbitrary identifier (e.g. customer email) instead of IP.
+ * Used for guest checkout so a single email can't spam orders from rotating IPs.
+ */
+export function isRateLimitedByIdentifier(identifier: string, key: string, cfg: RateLimitConfig): boolean {
+  const bucketKey = `${key}:${identifier.toLowerCase()}`;
+  const now = Date.now();
+
+  const bucket = buckets.get(bucketKey);
+  if (!bucket || now > bucket.resetAt) {
+    buckets.set(bucketKey, { count: 1, resetAt: now + cfg.windowMs });
+    return false;
+  }
+  bucket.count += 1;
+  return bucket.count > cfg.limit;
+}
+
+/** Basic email shape check — keeps obvious garbage out of the orders table. */
+export function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 /** Shared configs — generous on purpose, see comments */
 export const LIMITS = {
   // 10 login attempts per 15 min per IP — plenty for a real customer, throttles bots
@@ -46,6 +68,8 @@ export const LIMITS = {
   PASSWORD: { limit: 5, windowMs: 15 * 60 * 1000 },
   // 10 order placements per 15 min per IP — never blocks a real shopper
   ORDER: { limit: 10, windowMs: 15 * 60 * 1000 },
+  // 5 orders per 15 min per email — guest checkout has no account, so cap the identity
+  ORDER_EMAIL: { limit: 5, windowMs: 15 * 60 * 1000 },
   // 20 uploads per 15 min per IP (existing behavior, kept)
   UPLOAD: { limit: 20, windowMs: 15 * 60 * 1000 },
   // 5 password reset requests per 15 min per IP (existing behavior, kept)

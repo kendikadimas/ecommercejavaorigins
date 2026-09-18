@@ -22,8 +22,8 @@ jobs:
       - name: Create build env
         run: |
           echo "NEXT_PUBLIC_SITE_URL=https://javaorigins.co.nz" > .env
+          echo "SITE_URL=https://javaorigins.co.nz" >> .env
           echo "NEXT_PUBLIC_ADMIN_WA=${{ vars.NEXT_PUBLIC_ADMIN_WA }}" >> .env
-          echo "NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ vars.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}" >> .env
 
       - name: Build
         run: npm run build
@@ -38,10 +38,10 @@ jobs:
         run: node .github/scripts/upload-next.js
 
       - name: Restart Passenger
-        run: |
-          curl -sk \
-            -u "${{ secrets.SSH_USER }}:${{ secrets.SSH_PASS }}" \
-            "https://wirogunan.idweb.host:2083/execute/Fileman/save_file_content" \
-            --data-urlencode "dir=${{ secrets.SSH_APP_PATH }}/tmp" \
-            --data-urlencode "file=restart.txt" \
-            --data-urlencode "content=$(date +%s)" | jq .status
+        env:
+          CPANEL_HOST: wirogunan.idweb.host
+          CPANEL_USER: ${{ secrets.SSH_USER }}
+          CPANEL_PASS: ${{ secrets.SSH_PASS }}
+          APP_PATH: ${{ secrets.SSH_APP_PATH }}
+          STATIC_PATH: ${{ secrets.SSH_APP_PATH }}/.next/static
+        run: node .github/scripts/upload-next.js --restart-only

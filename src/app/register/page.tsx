@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { User, Mail, Lock, Phone, MapPin, UserPlus, AlertCircle } from 'lucide-react';
 import { useCustomerAuth } from '@/context/CustomerAuthContext';
 import { safeRedirect } from '@/lib/redirect';
-import { GoogleSignInButton } from '@/components/GoogleSignInButton';
 
 function CustomerRegisterInner() {
   const router = useRouter();
@@ -56,7 +55,8 @@ function CustomerRegisterInner() {
           <span className="text-xs font-bold uppercase tracking-widest text-[#276F27]">JAVA ORIGINS STORE</span>
           <h1 className="text-2xl font-extrabold text-[#26421F]">Create New Customer Account</h1>
           <p className="text-xs text-gray-500 font-normal">
-            Register to easily place orders, view status & order history.
+            Optional — an account saves your details and keeps all your orders in one place.
+            You can also checkout as a guest without registering.
           </p>
         </div>
 
@@ -66,14 +66,6 @@ function CustomerRegisterInner() {
             <span>{errorMsg}</span>
           </div>
         )}
-
-        <GoogleSignInButton redirect={redirectUrl} label="Sign up with Google" />
-
-        <div className="flex items-center gap-3">
-          <span className="flex-1 h-px bg-[#C9D3BE]" />
-          <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">or</span>
-          <span className="flex-1 h-px bg-[#C9D3BE]" />
-        </div>
 
         <form onSubmit={handleRegister} className="space-y-4">
           <div>

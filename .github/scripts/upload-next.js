@@ -139,8 +139,31 @@ async function uploadFiles(files, destBase, stats) {
   }
 }
 
+// Touch tmp/restart.txt so Passenger reloads the app with the freshly uploaded
+// build. Uses the same session auth as the uploads — Basic Auth gets rejected
+// by cPanel (returns an HTML login page), which is why the old curl+jq step failed.
+async function restartPassenger() {
+  const r = JSON.parse(
+    await cpanelPost('/execute/Fileman/save_file_content', {
+      dir: `${APP_PATH}/tmp`,
+      file: 'restart.txt',
+      content: String(Date.now()),
+    })
+  );
+  if (r.status !== 1) {
+    throw new Error('Passenger restart failed: ' + JSON.stringify(r.errors));
+  }
+  console.log('Passenger restart triggered (tmp/restart.txt)');
+}
+
 async function main() {
   await login();
+
+  // Standalone mode: `node upload-next.js --restart-only` just restarts the app.
+  if (process.argv.includes('--restart-only')) {
+    await restartPassenger();
+    return;
+  }
   const nextDir = '.next';
 
   // Server files + manifests + BUILD_ID → APP_PATH/.next/
@@ -167,6 +190,9 @@ async function main() {
 
   console.log(`\nDone: ${stats.ok} ok, ${stats.fail} failed`);
   if (stats.fail > 0) process.exit(1);
+
+  // Only restart once every file landed — a restart mid-upload would serve a mixed build.
+  await restartPassenger();
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

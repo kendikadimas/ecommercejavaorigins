@@ -930,16 +930,20 @@ export const store = {
       // Email notification (best-effort, di luar transaksi)
       if (data.customerEmail) {
         const wa = data.checkoutType === 'WHATSAPP';
+        const siteUrl = (process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://javaorigins.co.nz').replace(/\/+$/, '');
+        const trackUrl = `${siteUrl}/order/${orderId}`;
+        const trackBlock = `\n\n---\nTrack your order anytime (no login needed):\n${trackUrl}\n\nPlease save this link — it is your key to view the order status without an account.`;
         this.sendEmailNotification(
           data.customerEmail,
          `Order Confirmation #${orderNum} - Java Origins`,
-         wa
+         (wa
            ? `Hi ${data.customerName}, your order #${orderNum} worth $${data.totalAmount.toFixed(
                2
              )} NZD has been received. Our team will confirm it via WhatsApp shortly.`
            : `Hi ${data.customerName}, your order #${orderNum} worth $${data.totalAmount.toFixed(
                2
              )} NZD has been received. Please complete the payment and upload your transfer proof.`
+         ) + trackBlock
         ).catch(() => {});
       }
 
@@ -1050,10 +1054,11 @@ export const store = {
     if (status === 'REJECTED') statusText = 'Rejected (REJECTED)';
 
     if (existing.customerEmail) {
+      const siteUrl = (process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://javaorigins.co.nz').replace(/\/+$/, '');
       this.sendEmailNotification(
         existing.customerEmail,
         `Order Status Update #${existing.orderNumber} - Java Origins`,
-        `Hi ${existing.customerName}, the status of your order #${existing.orderNumber} has been updated to: ${statusText}.`
+        `Hi ${existing.customerName}, the status of your order #${existing.orderNumber} has been updated to: ${statusText}.\n\n---\nView your order:\n${siteUrl}/order/${existing.id}`
       ).catch(() => {});
     }
 

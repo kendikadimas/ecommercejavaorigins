@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { CheckCircle2, Clock, Upload, ArrowLeft, Building2, AlertCircle, ShieldCheck, Truck, XCircle, MessageCircle } from 'lucide-react';
+import { CheckCircle2, Clock, Upload, ArrowLeft, Building2, AlertCircle, ShieldCheck, Truck, XCircle, MessageCircle, Link2, Check } from 'lucide-react';
 import { OrderType } from '@/lib/store';
 import { formatPrice } from '@/lib/format';
 
@@ -17,6 +17,26 @@ export default function OrderStatusPage() {
   const [uploading, setUploading] = useState(false);
   const [proofUrl, setProofUrl] = useState('');
   const [message, setMessage] = useState('');
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const copyOrderLink = async () => {
+    const url = `${window.location.origin}/order/${id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      // Clipboard API needs a secure context / permission — fall back to a temp input
+      const el = document.createElement('textarea');
+      el.value = url;
+      el.style.position = 'fixed';
+      el.style.opacity = '0';
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+    }
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2500);
+  };
 
   useEffect(() => {
     fetch(`/api/orders?id=${id}`)
@@ -68,7 +88,7 @@ export default function OrderStatusPage() {
       if (updateRes.ok) {
         setProofUrl(uploadedUrl);
         setOrder(updatedOrder);
-        setMessage('Payment proof uploaded successfully! Order is awaiting Admin approval.');
+        setMessage('Payment proof uploaded successfully! Order is awaiting Admin approval. Keep this page link to track your order.');
       } else {
         setMessage(updatedOrder.error || 'Failed to save payment proof.');
       }
@@ -209,6 +229,36 @@ export default function OrderStatusPage() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Guest order-link reminder — no account is needed, so the link is the key */}
+        <div className="bg-[#F3F7ED] p-5 rounded-2xl border border-[#499A13]/40 shadow-sm space-y-3">
+          <div className="flex items-start space-x-3">
+            <ShieldCheck size={20} className="text-[#276F27] flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="text-sm font-extrabold text-[#22491F]">Save This Order Link</h3>
+              <p className="text-xs text-[#44663A] font-normal mt-1 leading-relaxed">
+                No account is required. Keep this link (and check your email) to view your order status,
+                upload payment proof, and follow delivery anytime.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={copyOrderLink}
+              className="inline-flex items-center space-x-1.5 bg-[#276F27] hover:bg-[#1F5A1F] text-white font-bold px-4 py-2 rounded-xl text-xs shadow transition-all"
+            >
+              {linkCopied ? <Check size={15} /> : <Link2 size={15} />}
+              <span>{linkCopied ? 'Link Copied!' : 'Copy Order Link'}</span>
+            </button>
+            <a
+              href={`mailto:?subject=${encodeURIComponent(`My Java Origins Order #${order.orderNumber}`)}&body=${encodeURIComponent(`Track my order: ${typeof window !== 'undefined' ? window.location.href : ''}`)}`}
+              className="inline-flex items-center space-x-1.5 bg-white border border-[#C9D3BE] text-[#26421F] hover:bg-[#F2F7E9] font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition-all"
+            >
+              <span>Email Me This Link</span>
+            </a>
+          </div>
         </div>
 
         {/* Payment Instructions & Upload Bukti Pembayaran */}
