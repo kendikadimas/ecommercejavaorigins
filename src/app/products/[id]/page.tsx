@@ -97,12 +97,8 @@ export default function ProductDetailPage() {
   const relatedProducts = allProducts.filter((p) => p.id !== product.id).slice(0, 4);
 
   const handleBuyNow = () => {
-    addToCart(product, quantity, false); // no drawer — straight to login/checkout
-    if (user) {
-      router.push('/checkout');
-    } else {
-      router.push('/login?redirect=/checkout');
-    }
+    addToCart(product, quantity, false); // no drawer — straight to checkout (guest allowed)
+    router.push('/checkout');
   };
 
   const handleSubmitReview = async (e: React.FormEvent) => {
