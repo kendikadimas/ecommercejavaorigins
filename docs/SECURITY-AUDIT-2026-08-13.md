@@ -173,28 +173,35 @@ SMTP_FROM="Java Origins <noreply@javaorigins.co.nz>"
   verifikasi pasca-deploy: coba alur forgot-password di production dengan email
   asli setelah SMTP terisi.
 
-## Google OAuth (Login / Register dengan Google)
+## Google OAuth — DIHAPUS (permintaan client)
 
-Fitur: tombol "Continue with Google" di halaman login & register.
+Fitur "Continue with Google" sudah **dihapus total** dari login & register.
+Client meminta transaksi tidak bergantung pada login Google.
 
-**Cara mengaktifkan (wajib):**
-1. Buat OAuth client di Google Cloud Console
-   (`https://console.cloud.google.com/apis/credentials`).
-2. Tambahkan `Authorized redirect URI` yang **persis sama** dengan
-   `GOOGLE_REDIRECT_URI`.
-3. Isi env vars di cPanel → Node.js App → env:
-   ```
-   GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com
-   GOOGLE_CLIENT_SECRET=xxxx
-   GOOGLE_REDIRECT_URI=https://javaorigins.co.nz/api/auth/google/callback
-   ```
-   (Dev lokal: `http://localhost:3000/api/auth/google/callback`)
+Yang dihapus:
+- `src/lib/google-auth.ts`
+- `src/app/api/auth/google/route.ts` + `.../callback/route.ts`
+- `src/components/GoogleSignInButton.tsx`
+- env `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`,
+  `NEXT_PUBLIC_GOOGLE_CLIENT_ID` (dan `NEXT_PUBLIC_GOOGLE_CLIENT_ID` di `deploy.yml`)
 
-**Alur:** `/api/auth/google` (redirect + state cookie) → Google consent →
-`/api/auth/google/callback` (exchange code, create-or-login user by email,
-set session cookie, redirect). State diverifikasi anti-CSRF.
+Login customer sekarang **hanya** email/password (bcrypt cost 12 + cookie HMAC).
 
-**Perilaku:** jika email Google sudah terdaftar (via password), akun yang sama
-di-login. Jika belum, user baru dibuat (password random tak terguessable).
-Satu-satunya `Any` auth boundary tetap cookie HMAC yang sama dengan login biasa.
+## Guest Checkout (tanpa login)
+
+Client meminta pembelian **tidak perlu login sama sekali**. Yang berubah:
+
+- `/checkout` tidak lagi me-redirect ke `/login`. Form langsung tampil untuk guest.
+- Akun menjadi **opsional** — hanya untuk prefill data + riwayat order terpusat.
+- Order tetap disimpan; kunci aksesnya adalah **link `/order/{uuid}`** (UUID v4,
+  tidak bisa ditebak). `orderNumber` yang mudah ditebak tetap ditolak untuk guest.
+- Email konfirmasi + email update status kini memuat **link tracking**.
+- Halaman order menyediakan tombol **Copy Order Link** + reminder menyimpan link.
+- Anti-spam: limit per-IP (`ORDER` 10/15 menit) **dan** per-email
+  (`ORDER_EMAIL` 5/15 menit) + validasi format email.
+
+**Trade-off yang diterima:** tidak ada verifikasi email, jadi siapa pun yang
+memegang link `/order/{uuid}` bisa melihat detail order dan mengunggah bukti
+bayar. Risiko dikendalikan oleh entropy UUID; jangan pernah menaruh PII di URL
+selain UUID ini.
 
