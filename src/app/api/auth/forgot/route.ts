@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { randomBytes, createHash } from 'crypto';
 import { store } from '@/lib/store';
 import { sendMail } from '@/lib/mailer';
+import { renderEmail } from '@/lib/email-template';
 import { isRateLimited, LIMITS } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
@@ -40,19 +41,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'SITE_URL is not configured.' }, { status: 500 });
     }
     const resetUrl = `${baseUrl}/reset-password?token=${token}`;
-    const escName = user.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
     await sendMail({
       to: email,
       subject: 'Reset Password - Java Origins',
-      html: `<div style="font-family:sans-serif;max-width:480px;margin:auto">
-        <h2>Reset Your Password</h2>
-        <p>Hi ${escName},</p>
-        <p>We received a request to reset the password for your account. Click the button below to set a new password. The link is valid for 1 hour.</p>
-        <p style="margin:24px 0"><a href="${resetUrl}" style="background:#276F27;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold">Reset Password</a></p>
-        <p style="font-size:12px;color:#888">If the button does not work, copy this link:<br/>${resetUrl}</p>
-        <p style="font-size:12px;color:#888">If you did not request this, you can safely ignore this email.</p>
-      </div>`,
+      html: renderEmail({
+        heading: 'Reset Your Password',
+        eyebrow: 'Account security',
+        tone: 'warning',
+        paragraphs: [
+          `Hi ${user.name}, we received a request to reset the password for your Java Origins account.`,
+          'Click the button below to choose a new password. This link is valid for 1 hour.',
+        ],
+        action: { label: 'Reset Password', url: resetUrl },
+        note: {
+          title: 'Did not request this?',
+          body: 'You can safely ignore this email — your current password will stay unchanged.',
+        },
+        footnote: `If the button does not work, copy this link: ${resetUrl}`,
+      }),
     });
 
     return NextResponse.json({ success: true });

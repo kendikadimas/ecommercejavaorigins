@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { createHash } from 'crypto';
 import { store } from '@/lib/store';
 import { sendMail } from '@/lib/mailer';
+import { renderEmail } from '@/lib/email-template';
 import { isRateLimited, LIMITS } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
@@ -45,15 +46,22 @@ export async function POST(req: NextRequest) {
     await store.updateUserPassword(user.id, hashedPassword);
     await store.markPasswordResetUsed(tokenHash);
 
-    const escName = user.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     await sendMail({
       to: user.email,
       subject: 'Password Changed - Java Origins',
-      html: `<div style="font-family:sans-serif;max-width:480px;margin:auto">
-        <h2>Password Changed</h2>
-        <p>Halo ${escName},</p>
-        <p>Your Java Origins account password has been changed. If this was not you, please contact admin immediately.</p>
-      </div>`,
+      html: renderEmail({
+        heading: 'Your Password Was Changed',
+        eyebrow: 'Account security',
+        tone: 'success',
+        paragraphs: [
+          `Hi ${user.name}, the password for your Java Origins account has been changed successfully.`,
+          'You can now log in with your new password.',
+        ],
+        note: {
+          title: 'Was this not you?',
+          body: 'Contact our admin immediately via WhatsApp so we can secure your account.',
+        },
+      }),
     });
 
     return NextResponse.json({ success: true });

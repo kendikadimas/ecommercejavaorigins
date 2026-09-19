@@ -2,6 +2,8 @@ import { getDb, toISO } from './db';
 import type { BannerType, PaymentMethodType, ProductType } from './seed-data';
 import type { RowDataPacket } from 'mysql2';
 import { sendMail } from './mailer';
+import { renderEmail, type EmailTemplateOptions, type EmailTone } from './email-template';
+import { formatPrice } from './format';
 
 export interface UserType {
   id: string;
@@ -376,7 +378,15 @@ export const store = {
   },
 
   // EMAIL NOTIFICATIONS — sends via SMTP when configured, always logs to email_logs
-  async sendEmailNotification(to: string, subject: string, body: string): Promise<EmailLogType> {
+  // `body` stays the plain-text record kept in email_logs; when `template` is given
+  // the actual email is rendered as branded HTML.
+  async sendEmailNotification(
+    to: string,
+    subject: string,
+    body: string,
+    template?: EmailTemplateOptions,
+    tone: EmailTone = 'info'
+  ): Promise<EmailLogType> {
     const db = await getDb();
     const id = 'email-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
     const createdAt = nowISO();
@@ -386,12 +396,14 @@ export const store = {
     );
     // best-effort real send; falls back silently to log-only when SMTP is unconfigured
     try {
-      const escaped = body.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      await sendMail({
-        to,
-        subject,
-        html: `<div style="font-family:sans-serif;max-width:480px;margin:auto;line-height:1.6">${escaped.replace(/\n/g, '<br/>')}</div>`,
-      });
+      const html = template
+        ? renderEmail({ ...template, tone })
+        : renderEmail({
+            heading: subject,
+            tone,
+            paragraphs: body.split('\n').filter((l) => l.trim()),
+          });
+      await sendMail({ to, subject, html });
     } catch {
       // email log already saved — don't fail the business flow over a mail hiccup
     }
@@ -796,10 +808,23 @@ export const store = {
           [orderId]
         );
         if (cust.length && cust[0].customer_email) {
+          const siteUrl = (process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://javaorigins.co.nz').replace(/\/+$/, '');
           this.sendEmailNotification(
             cust[0].customer_email as string,
             `Order #${cust[0].order_number} Cancelled - Java Origins`,
-            `Hi ${cust[0].customer_name}, order #${cust[0].order_number} was automatically cancelled because payment was not completed within 24 hours. Stock has been returned. Please place a new order if you are still interested.`
+            `Hi ${cust[0].customer_name}, order #${cust[0].order_number} was automatically cancelled because payment was not completed within 24 hours. Stock has been returned. Please place a new order if you are still interested.`,
+            {
+              heading: 'Order Automatically Cancelled',
+              eyebrow: `Order #${cust[0].order_number}`,
+              tone: 'warning',
+              paragraphs: [
+                `Hi ${cust[0].customer_name}, your order was cancelled because we did not receive payment within 24 hours.`,
+                'The reserved stock has been returned. If you are still interested, you are welcome to place a new order — we would love to serve you.',
+              ],
+              action: { label: 'Shop Again', url: `${siteUrl}/shop` },
+              footnote: 'Payment timing keeps our small-batch stock fair for everyone. Thank you for understanding.',
+            },
+            'warning'
           ).catch(() => {});
         }
       } catch (err) {
@@ -932,18 +957,49 @@ export const store = {
         const wa = data.checkoutType === 'WHATSAPP';
         const siteUrl = (process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://javaorigins.co.nz').replace(/\/+$/, '');
         const trackUrl = `${siteUrl}/order/${orderId}`;
-        const trackBlock = `\n\n---\nTrack your order anytime (no login needed):\n${trackUrl}\n\nPlease save this link — it is your key to view the order status without an account.`;
+        const body = wa
+          ? `Hi ${data.customerName}, your order #${orderNum} worth $${data.totalAmount.toFixed(
+              2
+            )} NZD has been received. Our team will confirm it via WhatsApp shortly.\n\nTrack your order anytime (no login needed):\n${trackUrl}\n\nPlease save this link — it is your key to view the order status without an account.`
+          : `Hi ${data.customerName}, your order #${orderNum} worth $${data.totalAmount.toFixed(
+              2
+            )} NZD has been received. Please complete the payment and upload your transfer proof.\n\nTrack your order anytime (no login needed):\n${trackUrl}\n\nPlease save this link — it is your key to view the order status without an account.`;
         this.sendEmailNotification(
           data.customerEmail,
-         `Order Confirmation #${orderNum} - Java Origins`,
-         (wa
-           ? `Hi ${data.customerName}, your order #${orderNum} worth $${data.totalAmount.toFixed(
-               2
-             )} NZD has been received. Our team will confirm it via WhatsApp shortly.`
-           : `Hi ${data.customerName}, your order #${orderNum} worth $${data.totalAmount.toFixed(
-               2
-             )} NZD has been received. Please complete the payment and upload your transfer proof.`
-         ) + trackBlock
+          `Order Confirmation #${orderNum} - Java Origins`,
+          body,
+          {
+            heading: wa ? 'Your Order Is Received' : 'Complete Your Payment',
+            eyebrow: `Order #${orderNum}`,
+            tone: wa ? 'info' : 'warning',
+            paragraphs: wa
+              ? [
+                  `Hi ${data.customerName}, thank you for your order. Our team will confirm the details with you on WhatsApp shortly.`,
+                  'No payment proof upload is needed — just finish the conversation with our admin.',
+                ]
+              : [
+                  `Hi ${data.customerName}, thank you for your order. Please complete the bank transfer, then upload your payment proof on the order page.`,
+                  'Your order is reserved while we wait for your transfer.',
+                ],
+            items: data.items.map((it) => ({
+              name: it.productName,
+              quantity: it.quantity,
+              price: formatPrice(it.price * it.quantity),
+            })),
+            total: formatPrice(data.totalAmount),
+            details: [
+              { label: 'Shipping method', value: data.shippingMethod || '-' },
+              { label: 'Shipping cost', value: formatPrice(data.shippingCost ?? 0) },
+              { label: 'Ship to', value: `${data.address}, ${data.city} ${data.postalCode}`.trim() },
+            ],
+            action: { label: wa ? 'View Your Order' : 'Upload Payment Proof', url: trackUrl },
+            note: {
+              title: 'Save this link',
+              body: 'It is your key to view the order status without an account. Keep it handy until your order arrives.',
+            },
+            footnote: `If the button does not work, copy this link: ${trackUrl}`,
+          },
+          wa ? 'info' : 'warning'
         ).catch(() => {});
       }
 
@@ -1055,10 +1111,49 @@ export const store = {
 
     if (existing.customerEmail) {
       const siteUrl = (process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://javaorigins.co.nz').replace(/\/+$/, '');
+      const trackUrl = `${siteUrl}/order/${existing.id}`;
+
+      const copy: Record<string, { heading: string; message: string }> = {
+        WAITING_APPROVAL: {
+          heading: 'We Received Your Payment Proof',
+          message: 'Our team is reviewing your transfer proof now. You will get another email as soon as it is approved.',
+        },
+        PAID: {
+          heading: 'Payment Approved',
+          message: 'Your payment has been confirmed. We are preparing your order for shipment.',
+        },
+        SHIPPED: {
+          heading: 'Your Order Is On The Way',
+          message: 'Your order has been handed to the courier. Please keep your phone reachable for delivery.',
+        },
+        REJECTED: {
+          heading: 'Payment Could Not Be Verified',
+          message: 'We could not verify your payment proof. Please re-upload a clear photo of your transfer receipt, or contact our admin on WhatsApp.',
+        },
+      };
+      const toneByStatus: Record<string, EmailTone> = {
+        WAITING_APPROVAL: 'info',
+        PAID: 'success',
+        SHIPPED: 'success',
+        REJECTED: 'danger',
+      };
+      const c = copy[status] || { heading: 'Order Status Updated', message: `Your order status is now: ${statusText}.` };
+
       this.sendEmailNotification(
         existing.customerEmail,
         `Order Status Update #${existing.orderNumber} - Java Origins`,
-        `Hi ${existing.customerName}, the status of your order #${existing.orderNumber} has been updated to: ${statusText}.\n\n---\nView your order:\n${siteUrl}/order/${existing.id}`
+        `Hi ${existing.customerName}, the status of your order #${existing.orderNumber} has been updated to: ${statusText}.\n\nView your order:\n${trackUrl}`,
+        {
+          heading: c.heading,
+          eyebrow: `Order #${existing.orderNumber}`,
+          paragraphs: [`Hi ${existing.customerName}, ${c.message}`, `Current status: ${statusText}.`],
+          action: { label: 'View Order Status', url: trackUrl },
+          note: {
+            title: 'Track without an account',
+            body: 'Keep this order link — it opens your order status anytime, no login needed.',
+          },
+        },
+        toneByStatus[status] || 'info'
       ).catch(() => {});
     }
 
