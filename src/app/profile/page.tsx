@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { User, ShoppingBag, Mail, LogOut, CheckCircle2, Clock, Truck, XCircle, AlertCircle, Save, ExternalLink, Lock } from 'lucide-react';
+import { User, ShoppingBag, Mail, LogOut, CheckCircle2, Clock, Truck, XCircle, AlertCircle, Save, ExternalLink, Lock, MessageSquare } from 'lucide-react';
 import { useCustomerAuth } from '@/context/CustomerAuthContext';
 import { OrderType, EmailLogType } from '@/lib/store';
 import { formatPrice } from '@/lib/format';
@@ -119,7 +119,16 @@ export default function CustomerProfilePage() {
     }
   };
 
-  const getStatusBadge = (status: OrderType['status']) => {
+  const getStatusBadge = (status: OrderType['status'], checkoutType: OrderType['checkoutType']) => {
+    // WhatsApp orders never upload proof — show that instead of "Awaiting Proof Upload".
+    if (checkoutType === 'WHATSAPP' && status === 'PENDING_PAYMENT') {
+      return (
+        <span className="inline-flex items-center bg-emerald-100 text-emerald-900 border border-emerald-300 px-2.5 py-1 rounded-full text-[11px] font-bold">
+          <MessageSquare size={12} className="mr-1 text-emerald-700" /> Order via WhatsApp
+        </span>
+      );
+    }
+
     switch (status) {
       case 'WAITING_APPROVAL':
         return (
@@ -263,7 +272,7 @@ export default function CustomerProfilePage() {
                         Date: {new Date(order.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
                       </p>
                     </div>
-                    <div>{getStatusBadge(order.status)}</div>
+                    <div>{getStatusBadge(order.status, order.checkoutType)}</div>
                   </div>
 
                   {/* Items list */}

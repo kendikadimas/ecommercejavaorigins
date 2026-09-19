@@ -85,7 +85,16 @@ export default function AdminOrdersPage() {
       }
     });
 
-  const getStatusBadge = (status: OrderType['status']) => {
+  const getStatusBadge = (status: OrderType['status'], checkoutType: OrderType['checkoutType']) => {
+    // WhatsApp orders skip payment-proof upload — admin confirms on WhatsApp instead.
+    if (checkoutType === 'WHATSAPP' && status === 'PENDING_PAYMENT') {
+      return (
+        <span className="inline-flex items-center bg-emerald-100 text-emerald-900 border border-emerald-300 px-2.5 py-1 rounded-full text-[11px] font-bold">
+          <MessageSquare size={12} className="mr-1 text-emerald-700" /> Order via WhatsApp (awaiting confirmation)
+        </span>
+      );
+    }
+
     switch (status) {
       case 'WAITING_APPROVAL':
         return (
@@ -325,7 +334,7 @@ export default function AdminOrdersPage() {
                       )}
                     </td>
 
-                    <td className="p-4">{getStatusBadge(order.status)}</td>
+                    <td className="p-4">{getStatusBadge(order.status, order.checkoutType)}</td>
 
                     {/* Distinct Action Buttons */}
                     <td className="p-4 text-right space-x-1 space-y-1">
@@ -513,7 +522,7 @@ export default function AdminOrdersPage() {
                 isLight ? 'bg-[#FAF8F5] border-[#E6DEC9]' : 'bg-[#231911] border-white/10'
               }`}
             >
-              <span className="text-xs text-gray-500">Status: {getStatusBadge(selectedOrderDetails.status)}</span>
+              <span className="text-xs text-gray-500">Status: {getStatusBadge(selectedOrderDetails.status, selectedOrderDetails.checkoutType)}</span>
               
               <div className="flex space-x-2">
                 {selectedOrderDetails.status === 'WAITING_APPROVAL' && (

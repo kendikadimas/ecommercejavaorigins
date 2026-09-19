@@ -125,7 +125,17 @@ export default function OrderStatusPage() {
     );
   }
 
-  const getStatusBadge = (status: OrderType['status']) => {
+  const getStatusBadge = (status: OrderType['status'], checkoutType: OrderType['checkoutType']) => {
+    // WhatsApp orders never upload payment proof — admin confirms on WhatsApp,
+    // so "Awaiting Payment Proof Upload" would be misleading for them.
+    if (checkoutType === 'WHATSAPP' && status === 'PENDING_PAYMENT') {
+      return (
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
+          <MessageCircle size={14} className="mr-1.5" /> Order Placed via WhatsApp
+        </span>
+      );
+    }
+
     switch (status) {
       case 'WAITING_APPROVAL':
         return (
@@ -194,7 +204,7 @@ export default function OrderStatusPage() {
                 <MessageCircle size={15} />
                 <span>Contact Admin</span>
               </a>
-              {getStatusBadge(order.status)}
+              {getStatusBadge(order.status, order.checkoutType)}
             </div>
           </div>
 
