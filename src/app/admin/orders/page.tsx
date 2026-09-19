@@ -358,6 +358,16 @@ export default function AdminOrdersPage() {
                         </button>
                       )}
 
+                      {/* WhatsApp orders never upload proof — admin confirms payment on WhatsApp */}
+                      {order.checkoutType === 'WHATSAPP' && order.status === 'PENDING_PAYMENT' && (
+                        <button
+                          onClick={() => handleUpdateStatus(order.id, 'PAID')}
+                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-lg text-[11px] shadow transition-all"
+                        >
+                          Mark as Paid
+                        </button>
+                      )}
+
                       {order.status === 'PAID' && (
                         <button
                           onClick={() => handleUpdateStatus(order.id, 'SHIPPED')}
@@ -531,6 +541,15 @@ export default function AdminOrdersPage() {
                     className="px-4 py-2 bg-emerald-600 text-white font-extrabold rounded-xl text-xs uppercase hover:bg-emerald-500 shadow"
                   >
                     Approve Payment
+                  </button>
+                )}
+                {/* WhatsApp orders never upload proof — admin confirms payment on WhatsApp */}
+                {selectedOrderDetails.checkoutType === 'WHATSAPP' && selectedOrderDetails.status === 'PENDING_PAYMENT' && (
+                  <button
+                    onClick={() => handleUpdateStatus(selectedOrderDetails.id, 'PAID')}
+                    className="px-4 py-2 bg-emerald-600 text-white font-extrabold rounded-xl text-xs uppercase hover:bg-emerald-500 shadow"
+                  >
+                    Mark as Paid
                   </button>
                 )}
                 {selectedOrderDetails.status === 'PAID' && (

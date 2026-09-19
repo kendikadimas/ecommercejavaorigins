@@ -179,6 +179,11 @@ export async function PUT(req: NextRequest) {
         SHIPPED: ['PAID'],
         REJECTED: ['PENDING_PAYMENT', 'WAITING_APPROVAL', 'PAID'],
       };
+      // WhatsApp orders skip proof upload, so admin marks them paid straight from
+      // PENDING_PAYMENT — they can never reach WAITING_APPROVAL otherwise.
+      if (order.checkoutType === 'WHATSAPP') {
+        validFrom.PAID = ['PENDING_PAYMENT', 'WAITING_APPROVAL'];
+      }
       if (!validFrom[status]?.includes(from)) {
         return NextResponse.json(
           { error: `Transition ${from} -> ${status} is not allowed` },
