@@ -35,14 +35,44 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(order, { headers: { 'Cache-Control': 'no-store, max-age=0' } });
     }
 
-    // List all orders — admin only
+    // List all orders — admin only. `?view=trash` returns soft-deleted ones instead.
     if (!getAdminSession(req)) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
-    const orders = await store.getOrders();
+    const view = searchParams.get('view');
+    const orders =
+      view === 'trash' ? await store.getDeletedOrders() : await store.getOrders();
     return NextResponse.json(orders, { headers: { 'Cache-Control': 'no-store, max-age=0' } });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to load orders' }, { status: 500 });
+  }
+}
+
+// Soft delete / restore — admin only. Never hard-deletes: the DB row (and its
+// payment proof reference) is kept as a financial trail.
+export async function DELETE(req: NextRequest) {
+  try {
+    if (!getAdminSession(req)) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
+    const body = await req.json().catch(() => ({}));
+    const rawIds: unknown = Array.isArray(body.ids) ? body.ids : body.id ? [body.id] : [];
+    const ids = (rawIds as unknown[])
+      .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
+      .map((x) => x.trim())
+      .slice(0, 100); // bulk cap
+    if (ids.length === 0) {
+      return NextResponse.json({ error: 'No order ids provided' }, { status: 400 });
+    }
+
+    const restore = body.restore === true;
+    const updated = restore
+      ? await store.restoreOrders(ids)
+      : await store.softDeleteOrders(ids);
+    return NextResponse.json({ updated, restore });
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to update orders' }, { status: 500 });
   }
 }
 
@@ -172,6 +202,13 @@ export async function PUT(req: NextRequest) {
       const order = await store.getOrderById(id);
       if (!order) {
         return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+      }
+      // Trashed orders are frozen — restore first (store also enforces this).
+      if (order.deletedAt) {
+        return NextResponse.json(
+          { error: 'Order is in trash — restore it before changing its status' },
+          { status: 400 }
+        );
       }
       const from = order.status;
       const validFrom: Record<string, string[]> = {

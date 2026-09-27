@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye, X, MessageSquare, CreditCard, CheckCircle2, Clock, Truck, XCircle, Search } from 'lucide-react';
+import { Eye, X, MessageSquare, CreditCard, CheckCircle2, Clock, Truck, XCircle, Search, Trash2, RotateCcw, Square, CheckSquare } from 'lucide-react';
 import { OrderType } from '@/lib/store';
 import { formatPrice } from '@/lib/format';
 import { useAdminTheme } from '@/context/AdminThemeContext';
@@ -20,9 +20,18 @@ export default function AdminOrdersPage() {
   const [search, setSearch] = useState('');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'totalHigh' | 'totalLow'>('newest');
 
+  // Trash mode: show soft-deleted orders instead of active ones.
+  const [trashView, setTrashView] = useState(false);
+  // Multi-select for bulk delete / restore.
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkBusy, setBulkBusy] = useState(false);
+
   const fetchOrders = async () => {
     try {
-      const res = await fetch(`/api/orders?t=${Date.now()}`);
+      const url = trashView
+        ? `/api/orders?view=trash&t=${Date.now()}`
+        : `/api/orders?t=${Date.now()}`;
+      const res = await fetch(url);
       if (res.status === 401) {
         router.replace('/admin/login');
         return;
@@ -36,27 +45,9 @@ export default function AdminOrdersPage() {
   };
 
   useEffect(() => {
+    setSelectedIds([]); // selection is per-view — clear it when switching lists
     fetchOrders();
-  }, []);
-
-  const handleUpdateStatus = async (id: string, status: OrderType['status']) => {
-    try {
-      const res = await fetch('/api/orders', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status }),
-      });
-      if (res.ok) {
-        const updated = await res.json();
-        setOrders((prev) => prev.map((o) => (o.id === id ? updated : o)));
-        if (selectedOrderDetails?.id === id) {
-          setSelectedOrderDetails(updated);
-        }
-      }
-    } catch {
-      alert('Failed to update order approval status.');
-    }
-  };
+  }, [trashView]);
 
   const filteredOrders = orders
     .filter((o) => {
@@ -84,6 +75,105 @@ export default function AdminOrdersPage() {
           return tb - ta; // newest
       }
     });
+
+  const toggleSelected = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const allVisibleSelected =
+    filteredOrders.length > 0 && filteredOrders.every((o) => selectedIds.includes(o.id));
+
+  const toggleSelectAll = () => {
+    if (allVisibleSelected) {
+      setSelectedIds((prev) => prev.filter((id) => !filteredOrders.some((o) => o.id === id)));
+    } else {
+      setSelectedIds((prev) =>
+        Array.from(new Set([...prev, ...filteredOrders.map((o) => o.id)]))
+      );
+    }
+  };
+
+  const handleBulk = async (restore: boolean) => {
+    const verb = restore ? 'restore' : 'delete';
+    if (selectedIds.length === 0) return;
+    const ok = window.confirm(
+      restore
+        ? `Restore ${selectedIds.length} order(s) back to the active list?`
+        : `Move ${selectedIds.length} order(s) to trash? They stay in the database and can be restored anytime.`
+    );
+    if (!ok) return;
+
+    setBulkBusy(true);
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedIds, restore }),
+      });
+      if (res.status === 401) {
+        router.replace('/admin/login');
+        return;
+      }
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || `Failed to ${verb} orders.`);
+        return;
+      }
+      setSelectedIds([]);
+      await fetchOrders();
+    } catch {
+      alert(`Failed to ${verb} orders.`);
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const handleSingle = async (id: string, restore: boolean) => {
+    setBulkBusy(true);
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: [id], restore }),
+      });
+      if (res.status === 401) {
+        router.replace('/admin/login');
+        return;
+      }
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || 'Failed to update the order.');
+        return;
+      }
+      setSelectedIds((prev) => prev.filter((x) => x !== id));
+      await fetchOrders();
+    } catch {
+      alert('Failed to update the order.');
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const handleUpdateStatus = async (id: string, status: OrderType['status']) => {
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setOrders((prev) => prev.map((o) => (o.id === id ? updated : o)));
+        if (selectedOrderDetails?.id === id) {
+          setSelectedOrderDetails(updated);
+        }
+      }
+    } catch {
+      alert('Failed to update order approval status.');
+    }
+  };
 
   const getStatusBadge = (status: OrderType['status'], checkoutType: OrderType['checkoutType']) => {
     // WhatsApp orders skip payment-proof upload — admin confirms on WhatsApp instead.
@@ -154,8 +244,8 @@ export default function AdminOrdersPage() {
           </h1>
         </div>
 
-        {/* Status Filter Buttons */}
-        <div className="flex flex-wrap gap-2">
+        {/* Status Filter Buttons + Trash toggle */}
+        <div className="flex flex-wrap gap-2 items-center">
           {[
             { id: 'ALL', label: 'All Statuses', activeClass: 'bg-[#D97706] text-white' },
             { id: 'WAITING_APPROVAL', label: 'Pending Approval', activeClass: 'bg-amber-500 text-white' },
@@ -177,8 +267,66 @@ export default function AdminOrdersPage() {
               {st.label}
             </button>
           ))}
+
+          <span className={`hidden sm:block h-5 w-px ${isLight ? 'bg-[#E6DEC9]' : 'bg-white/10'}`} />
+
+          <button
+            onClick={() => setTrashView((v) => !v)}
+            title="Show soft-deleted orders"
+            className={`ml-auto sm:ml-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center space-x-1.5 ${
+              trashView
+                ? 'bg-[#B45309] text-white'
+                : isLight
+                ? 'bg-white text-[#5C4D40] border border-[#E6DEC9] hover:bg-[#FAF6F0]'
+                : 'bg-[#2E2016] text-gray-300 hover:bg-white/10'
+            }`}
+          >
+            <Trash2 size={13} />
+            <span>{trashView ? 'Viewing Trash' : 'Trash'}</span>
+          </button>
         </div>
       </div>
+
+      {/* Bulk action bar */}
+      {selectedIds.length > 0 && (
+        <div
+          className={`flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl border shadow-sm ${
+            isLight ? 'bg-white border-[#E6DEC9]' : 'bg-[#231911] border-white/10'
+          }`}
+        >
+          <span className="text-xs font-bold">
+            {selectedIds.length} selected
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {trashView ? (
+              <button
+                onClick={() => handleBulk(true)}
+                disabled={bulkBusy}
+                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-extrabold rounded-lg text-xs shadow transition-all flex items-center space-x-1.5"
+              >
+                <RotateCcw size={13} />
+                <span>Restore Selected ({selectedIds.length})</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => handleBulk(false)}
+                disabled={bulkBusy}
+                className="px-3 py-1.5 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-extrabold rounded-lg text-xs shadow transition-all flex items-center space-x-1.5"
+              >
+                <Trash2 size={13} />
+                <span>Delete Selected ({selectedIds.length})</span>
+              </button>
+            )}
+          </div>
+          <button
+            onClick={() => setSelectedIds([])}
+            disabled={bulkBusy}
+            className="ml-auto text-xs font-bold text-gray-500 hover:text-gray-800 underline underline-offset-2"
+          >
+            Clear selection
+          </button>
+        </div>
+      )}
 
       {/* Search & Sort */}
       <div
@@ -239,6 +387,15 @@ export default function AdminOrdersPage() {
               }`}
             >
               <tr>
+                <th className="p-4 w-10">
+                  <button
+                    onClick={toggleSelectAll}
+                    title={allVisibleSelected ? 'Deselect all visible' : 'Select all visible'}
+                    className="text-[#FACC15] hover:text-white"
+                  >
+                    {allVisibleSelected ? <CheckSquare size={16} /> : <Square size={16} />}
+                  </button>
+                </th>
                 <th className="p-4">Order No. / Customer</th>
                 <th className="p-4">Checkout Flow</th>
                 <th className="p-4">Total Bill</th>
@@ -254,19 +411,19 @@ export default function AdminOrdersPage() {
             >
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="text-center p-8 text-gray-400 font-normal text-sm">
+                  <td colSpan={7} className="text-center p-8 text-gray-400 font-normal text-sm">
                     Loading orders list...
                   </td>
                 </tr>
               ) : filteredOrders.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className={`text-center p-8 font-normal text-sm ${
                       isLight ? 'text-[#786C60]' : 'text-gray-400'
                     }`}
                   >
-                    No orders found.
+                    {trashView ? 'Trash is empty.' : 'No orders found.'}
                   </td>
                 </tr>
               ) : (
@@ -277,6 +434,19 @@ export default function AdminOrdersPage() {
                       isLight ? 'hover:bg-[#FAF6F0]' : 'hover:bg-[#2E2016]'
                     }`}
                   >
+                    <td className="p-4">
+                      <button
+                        onClick={() => toggleSelected(order.id)}
+                        title={selectedIds.includes(order.id) ? 'Deselect' : 'Select'}
+                        className={isLight ? 'text-[#B45309]' : 'text-[#FACC15]'}
+                      >
+                        {selectedIds.includes(order.id) ? (
+                          <CheckSquare size={16} />
+                        ) : (
+                          <Square size={16} />
+                        )}
+                      </button>
+                    </td>
                     <td className="p-4 space-y-1">
                       <p
                         className={`font-mono font-extrabold text-sm ${
@@ -291,6 +461,11 @@ export default function AdminOrdersPage() {
                       <p className={`text-[11px] font-normal ${isLight ? 'text-[#786C60]' : 'text-gray-400'}`}>
                         Phone: {order.customerPhone}
                       </p>
+                      {trashView && order.deletedAt && (
+                        <p className="text-[11px] font-bold text-red-600">
+                          Deleted: {new Date(order.deletedAt).toLocaleString()}
+                        </p>
+                      )}
                     </td>
 
                     <td className="p-4">
@@ -377,12 +552,33 @@ export default function AdminOrdersPage() {
                         </button>
                       )}
 
-                      {order.status !== 'REJECTED' && order.status !== 'SHIPPED' && (
+                      {order.status !== 'REJECTED' && order.status !== 'SHIPPED' && !trashView && (
                         <button
                           onClick={() => handleUpdateStatus(order.id, 'REJECTED')}
                           className="px-2.5 py-1.5 bg-red-100 text-red-700 hover:bg-red-600 hover:text-white rounded-lg font-bold text-[11px] transition-colors border border-red-300"
                         >
                           Reject
+                        </button>
+                      )}
+
+                      {trashView ? (
+                        <button
+                          onClick={() => handleSingle(order.id, true)}
+                          disabled={bulkBusy}
+                          className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-lg font-bold text-[11px] shadow transition-all flex items-center space-x-1"
+                        >
+                          <RotateCcw size={12} />
+                          <span>Restore</span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleSingle(order.id, false)}
+                          disabled={bulkBusy}
+                          title="Move to trash (soft delete — restorable)"
+                          className="px-2.5 py-1.5 bg-red-100 text-red-700 hover:bg-red-600 hover:text-white disabled:opacity-50 rounded-lg font-bold text-[11px] transition-colors border border-red-300 flex items-center space-x-1"
+                        >
+                          <Trash2 size={12} />
+                          <span>Delete</span>
                         </button>
                       )}
                     </td>

@@ -134,8 +134,10 @@ CREATE TABLE IF NOT EXISTS orders (
   notes VARCHAR(500) DEFAULT '',
   created_at DATETIME(3) DEFAULT CURRENT_TIMESTAMP(3),
   updated_at DATETIME(3) DEFAULT CURRENT_TIMESTAMP(3),
+  deleted_at DATETIME(3) NULL,
   INDEX idx_orders_customer_email (customer_email),
-  INDEX idx_orders_status (status)
+  INDEX idx_orders_status (status),
+  INDEX idx_orders_deleted (deleted_at)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS order_items (
@@ -218,6 +220,17 @@ export async function getDb(): Promise<mysql.Pool> {
       }
       try {
         await conn.query('ALTER TABLE orders ADD UNIQUE INDEX uniq_orders_number (order_number)');
+      } catch (e) {
+        migrationGuard(e);
+      }
+      // Soft delete for orders: NULL = active, set = hidden from admin/profile lists.
+      try {
+        await conn.query('ALTER TABLE orders ADD COLUMN deleted_at DATETIME(3) NULL');
+      } catch (e) {
+        migrationGuard(e);
+      }
+      try {
+        await conn.query('ALTER TABLE orders ADD INDEX idx_orders_deleted (deleted_at)');
       } catch (e) {
         migrationGuard(e);
       }

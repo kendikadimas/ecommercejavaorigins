@@ -1,6 +1,6 @@
 import { getDb, toISO } from './db';
 import type { BannerType, PaymentMethodType, ProductType } from './seed-data';
-import type { RowDataPacket } from 'mysql2';
+import type { RowDataPacket, ResultSetHeader } from 'mysql2';
 import { sendMail } from './mailer';
 import { renderEmail, type EmailTemplateOptions, type EmailTone } from './email-template';
 import { formatPrice } from './format';
@@ -55,6 +55,8 @@ export interface OrderType {
   items: OrderItemType[];
   createdAt: string;
   updatedAt: string;
+  /** Soft delete marker — NULL/undefined means the order is active. */
+  deletedAt?: string | null;
 }
 
 interface UserRow extends RowDataPacket {
@@ -126,6 +128,7 @@ interface OrderRow extends RowDataPacket {
   notes?: string;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  deletedAt?: Date | string | null;
   // payment method joined fields
   pmId?: string;
   pmName?: string;
@@ -262,6 +265,7 @@ function mapOrder(r: OrderRow): OrderType {
     items: [],
     createdAt: toISO(r.createdAt) ?? nowISO(),
     updatedAt: toISO(r.updatedAt) ?? nowISO(),
+    ...(r.deletedAt && { deletedAt: toISO(r.deletedAt) }),
   };
 }
 
@@ -273,7 +277,7 @@ SELECT
   o.shipping_method AS shippingMethod, o.shipping_cost AS shippingCost,
   o.payment_method_id AS paymentMethodId, o.payment_proof_url AS paymentProofUrl,
   o.status, o.checkout_type AS checkoutType, o.notes,
-  o.created_at AS createdAt, o.updated_at AS updatedAt,
+  o.created_at AS createdAt, o.updated_at AS updatedAt, o.deleted_at AS deletedAt,
   pm.id AS pmId, pm.name AS pmName, pm.bank_name AS pmBankName,
   pm.account_number AS pmAccountNumber, pm.account_name AS pmAccountName,
   pm.qr_code_url AS pmQrCodeUrl, pm.instructions AS pmInstructions, pm.active AS pmActive
@@ -766,7 +770,7 @@ export const store = {
     const db = await getDb();
     const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const [rows] = await db.query<RowDataPacket[]>(
-      "SELECT o.id FROM orders o WHERE o.status = ? AND o.checkout_type != 'WHATSAPP' AND o.created_at < ?",
+      "SELECT o.id FROM orders o WHERE o.status = ? AND o.checkout_type != 'WHATSAPP' AND o.deleted_at IS NULL AND o.created_at < ?",
       ['PENDING_PAYMENT', cutoff]
     );
     let released = 0;
@@ -841,7 +845,9 @@ export const store = {
   async getOrders(): Promise<OrderType[]> {
     const db = await getDb();
     await this.releaseExpiredPendingOrders();
-    const [rows] = await db.query<OrderRow[]>(ORDER_SELECT + ' ORDER BY o.created_at DESC');
+    const [rows] = await db.query<OrderRow[]>(
+      ORDER_SELECT + ' WHERE o.deleted_at IS NULL ORDER BY o.created_at DESC'
+    );
     return attachItems(rows.map(mapOrder));
   },
 
@@ -849,7 +855,8 @@ export const store = {
     const db = await getDb();
     await this.releaseExpiredPendingOrders();
     const [rows] = await db.query<OrderRow[]>(
-      ORDER_SELECT + ' WHERE LOWER(o.customer_email) = LOWER(?) ORDER BY o.created_at DESC',
+      ORDER_SELECT +
+        " WHERE o.deleted_at IS NULL AND LOWER(o.customer_email) = LOWER(?) ORDER BY o.created_at DESC",
       [email]
     );
     return attachItems(rows.map(mapOrder));
@@ -865,6 +872,37 @@ export const store = {
     if (!rows.length) return null;
     const [order] = await attachItems([mapOrder(rows[0])]);
     return order;
+  },
+
+  // SOFT DELETE — orders stay in the DB (financial trail, payment proofs) but are
+  // hidden from admin/profile lists. Customer /order/{uuid} links keep working:
+  // the random UUID is the bearer key, so trashing never breaks a real customer.
+  async softDeleteOrders(ids: string[]): Promise<number> {
+    if (ids.length === 0) return 0;
+    const db = await getDb();
+    const [res] = await db.query<ResultSetHeader>(
+      'UPDATE orders SET deleted_at = NOW(3), updated_at = NOW(3) WHERE id IN (?) AND deleted_at IS NULL',
+      [ids]
+    );
+    return res.affectedRows;
+  },
+
+  async restoreOrders(ids: string[]): Promise<number> {
+    if (ids.length === 0) return 0;
+    const db = await getDb();
+    const [res] = await db.query<ResultSetHeader>(
+      'UPDATE orders SET deleted_at = NULL, updated_at = NOW(3) WHERE id IN (?) AND deleted_at IS NOT NULL',
+      [ids]
+    );
+    return res.affectedRows;
+  },
+
+  async getDeletedOrders(): Promise<OrderType[]> {
+    const db = await getDb();
+    const [rows] = await db.query<OrderRow[]>(
+      ORDER_SELECT + ' WHERE o.deleted_at IS NOT NULL ORDER BY o.deleted_at DESC'
+    );
+    return attachItems(rows.map(mapOrder));
   },
 
   async createOrder(data: {
@@ -1022,6 +1060,8 @@ export const store = {
     const db = await getDb();
     const existing = await this.getOrderById(id);
     if (!existing) return null;
+    // Trashed orders are frozen — restore them first before any status transition.
+    if (existing.deletedAt) return null;
     if (fromStatuses && !fromStatuses.includes(existing.status)) return null;
 
     const updatedAt = nowISO();
