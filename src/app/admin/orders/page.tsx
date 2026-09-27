@@ -434,11 +434,11 @@ export default function AdminOrdersPage() {
                       isLight ? 'hover:bg-[#FAF6F0]' : 'hover:bg-[#2E2016]'
                     }`}
                   >
-                    <td className="p-4">
+                    <td className="p-4 align-top">
                       <button
                         onClick={() => toggleSelected(order.id)}
                         title={selectedIds.includes(order.id) ? 'Deselect' : 'Select'}
-                        className={isLight ? 'text-[#B45309]' : 'text-[#FACC15]'}
+                        className={isLight ? 'text-[#B45309] mt-0.5' : 'text-[#FACC15] mt-0.5'}
                       >
                         {selectedIds.includes(order.id) ? (
                           <CheckSquare size={16} />
@@ -512,7 +512,7 @@ export default function AdminOrdersPage() {
                     <td className="p-4">{getStatusBadge(order.status, order.checkoutType)}</td>
 
                     {/* Distinct Action Buttons */}
-                    <td className="p-4 text-right space-x-1 space-y-1">
+                    <td className="p-4 text-right align-top space-x-1 space-y-1">
                       <button
                         onClick={() => setSelectedOrderDetails(order)}
                         className={`px-2.5 py-1.5 rounded-lg font-semibold text-[11px] border ${
