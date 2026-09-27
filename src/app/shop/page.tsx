@@ -99,12 +99,7 @@ function ShopInner() {
           <h1 className="font-serif text-3xl sm:text-5xl font-extrabold text-[#140E0A] mt-1 tracking-tight">
             Shop All Java Origins Products
           </h1>
-          <p className="text-sm text-[#5A4D41] mt-3 max-w-3xl leading-relaxed">
-            Java Origins is an e-commerce platform connecting authentic Indonesian products with the New Zealand market, featuring herbal drinks, MSME food and snacks, and natural herbal care.
-          </p>
-          <p className="text-sm text-[#5A4D41] mt-2 max-w-3xl leading-relaxed">
-            We also introduce inspired modest fashion and offer custom designs through Java Royale Fashion, available at javaroyalefashions.co.nz.
-          </p>
+          <ShopDescription />
         </div>
 
         {/* Search & Category Filter Controls */}
@@ -229,6 +224,53 @@ function ShopInner() {
         )}
 
       </div>
+    </div>
+  );
+}
+
+// Collapsible shop description — shows the first paragraph by default,
+// "See More" expands the rest (fashion intro + custom sourcing offer).
+function ShopDescription() {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="text-sm text-[#5A4D41] mt-3 max-w-3xl leading-relaxed">
+      <p>
+        Java Origins is an e-commerce platform connecting authentic Indonesian products with
+        the New Zealand market, featuring herbal drinks, MSME food and snacks, natural herbal
+        care, and more.
+      </p>
+
+      {expanded && (
+        <>
+          <p className="mt-2">
+            We also introduce inspired modest fashion and offer custom designs through{' '}
+            <Link
+              href="https://javaroyalefashions.co.nz"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-[#276F27] hover:underline"
+            >
+              Java Royale Fashion
+            </Link>{' '}
+            (javaroyalefashions.co.nz).
+          </p>
+          <p className="mt-2">
+            Can&apos;t find what you&apos;re looking for? We may be able to source products
+            directly from Indonesia. Simply contact us with your request, and we&apos;ll do
+            our best to assist.
+          </p>
+        </>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className="mt-1.5 text-xs font-bold text-[#276F27] hover:underline underline-offset-2"
+        aria-expanded={expanded}
+      >
+        {expanded ? 'See Less' : 'See More'}
+      </button>
     </div>
   );
 }
